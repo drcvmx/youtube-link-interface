@@ -9,10 +9,16 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Youtube, CheckCircle, AlertCircle, Sun, Moon, FileText } from "lucide-react"
 import { useTheme } from "next-themes"
 
+interface Message {
+  type: "success" | "error";
+  text: string;
+}
+
 export default function YouTubeLinkSubmission() {
+  const [youtubeUrl, setYoutubeUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState(null)
-  const [response, setResponse] = useState<any>(null) // Tipado para la respuesta
+  const [message, setMessage] = useState<Message | null>(null)
+  const [response, setResponse] = useState<any>(null)
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -20,7 +26,7 @@ export default function YouTubeLinkSubmission() {
     setMounted(true)
   }, [])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     setIsLoading(true)
@@ -28,39 +34,64 @@ export default function YouTubeLinkSubmission() {
     setResponse(null)
 
     try {
-      const apiResponse = await fetch("/api/youtube", {
+      // Paso 1: Transcribir el video con el backend de Python
+      setMessage({ type: "success", text: "Transcribing video... Please wait." });
+      const pythonApiUrl = "http://127.0.0.1:5000/transcribir";
+      const pythonApiResponse = await fetch(pythonApiUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({}),
-      })
+        body: JSON.stringify({ url: youtubeUrl }),
+      });
 
-      const data = await apiResponse.json()
+      const pythonData = await pythonApiResponse.json();
 
-      if (apiResponse.ok) {
-        setMessage({ type: "success", text: "Local text file analyzed successfully!" })
-        setResponse(data)
-      } else {
-        setMessage({ type: "error", text: data.error || "Failed to analyze local text file" })
+      if (!pythonApiResponse.ok) {
+        setMessage({ type: "error", text: pythonData.error || "Failed to transcribe YouTube video" });
+        return;
       }
-    } catch (error) {
-      setMessage({ type: "error", text: "Network error. Please try again." })
+      
+      const transcriptionFilePath = pythonData.savedFilePath; // Obtener la ruta del archivo transcrito
+
+      // Paso 2: Analizar el texto transcrito con el backend de Next.js (Ollama)
+      setMessage({ type: "success", text: "Transcription successful! Analyzing text with Ollama..." });
+      const nextApiUrl = "/api/youtube";
+      const nextApiResponse = await fetch(nextApiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ transcriptionFilePath }), // Enviar la ruta del archivo transcrito
+      });
+
+      const nextData = await nextApiResponse.json();
+
+      if (nextApiResponse.ok) {
+        setMessage({ type: "success", text: nextData.message || "Analysis completed successfully!" });
+        setResponse(nextData);
+      } else {
+        setMessage({ type: "error", text: nextData.error || "Failed to analyze transcribed text" });
+      }
+    } catch (error: any) {
+      setMessage({ type: "error", text: `Network error or unexpected issue: ${error.message}. Please ensure both backends are running.` });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   const handleDownload = () => {
     if (response && response.savedFilePath) {
+      // response.savedFilePath ahora se refiere al archivo de análisis de Ollama
+      const downloadUrl = response.savedFilePath; // Quitar la barra inicial extra
       const link = document.createElement('a');
-      link.href = response.savedFilePath;
-      link.download = response.savedFilePath.split('/').pop(); // Obtener el nombre del archivo
+      link.href = downloadUrl;
+      link.download = response.savedFilePath.split('/').pop() || 'analysis_report.txt'; // Obtener el nombre del archivo de savedFilePath
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } else {
-      setMessage({ type: "error", text: "No report available for download." });
+      setMessage({ type: "error", text: "No analysis report available for download." });
     }
   };
 
@@ -86,19 +117,19 @@ export default function YouTubeLinkSubmission() {
             <div className="mx-auto mb-4 w-12 h-12 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
               <Youtube className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
-            <CardTitle className="text-2xl font-bold">Analyze Youtube</CardTitle>
-            <CardDescription>Enter a YouTube video link to extract customer voice insights.</CardDescription>
+            <CardTitle className="text-2xl font-bold">Transcribe & Analyze YouTube Video</CardTitle>
+            <CardDescription>Enter a YouTube video link to transcribe and extract customer voice insights.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="analyze-text">YouTube Link</Label>
+                <Label htmlFor="youtube-link">YouTube Link</Label>
                 <Input
-                  id="analyze-text"
+                  id="youtube-link"
                   type="text"
-                  placeholder="public/ejemplo1.txt"
-                  value="public/ejemplo1.txt"
-                  readOnly
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={youtubeUrl}
+                  onChange={(e) => setYoutubeUrl(e.target.value)}
                   className="w-full"
                   disabled={isLoading}
                 />
@@ -137,10 +168,10 @@ export default function YouTubeLinkSubmission() {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
+                    {message?.text.includes("Transcribing") ? "Transcribing..." : "Analyzing..."}
                   </>
                 ) : (
-                  "Analyze"
+                  "Transcribe & Analyze"
                 )}
               </Button>
 
@@ -168,14 +199,14 @@ export default function YouTubeLinkSubmission() {
                     />
                   </svg>
                   Download Analysis Report
-                  {!response?.savedFilePath && !isLoading && <span className="ml-2 text-xs opacity-75">(Analyze text first)</span>}
+                  {!response?.savedFilePath && !isLoading && <span className="ml-2 text-xs opacity-75">(Transcribe & Analyze video first)</span>}
                 </Button>
               </div>
 
               <div className="mt-6 text-sm text-gray-600 dark:text-gray-400">
-                <p className="font-medium mb-2">Analyzed file:</p>
+                <p className="font-medium mb-2">Analyzed YouTube Link:</p>
                 <ul className="space-y-1 text-xs">
-                  <li>• public/ejemplo1.txt</li>
+                  <li>• {youtubeUrl || "No link provided"}</li>
                 </ul>
               </div>
             </form>
@@ -192,9 +223,9 @@ export default function YouTubeLinkSubmission() {
                   <div className="absolute top-0 left-0 w-16 h-16 border-4 border-red-600 dark:border-red-400 border-t-transparent rounded-full animate-spin"></div>
                 </div>
                 <div className="text-center">
-                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Analyzing your text...</p>
+                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300">{message?.text.includes("Transcribing") ? "Transcribing YouTube video..." : "Analyzing transcribed text..."}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Please wait while we process your local text file.
+                    {message?.text.includes("Transcribing") ? "Please wait while we transcribe your YouTube video." : "Processing with Ollama..."}
                   </p>
                 </div>
                 <div className="flex space-x-1">

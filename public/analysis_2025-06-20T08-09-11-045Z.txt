@@ -1,0 +1,25 @@
+Análisis de: transcripciones\transcripcion_dJ9OzphOxv4.txt
+
+Resumen:
+Summarize the text in 2 concise sentences:
+
+1. "No sé si es bueno lo que yo siento, temo asustarté con decírtelos, jo derrota lo que tenemos." - The music fades away, and the speaker expresses their fear of not understanding or feeling uncomfortable with the information given to them. They also express that they don't understand their own emotions towards it.
+
+Puntos Clave:
+The Top 3 Key Points from this text are:
+1. "No sé si es bueno lo que yo siento" (I don't know if it's good or not)
+2. "Temo asustarté con decírtelos" (I feel scared of telling you)
+3. "Y es que a tu s labios no los entiendo" (You have no idea what I'm thinking about)
+These points are discussed in the text, with examples and evidence provided to support them.
+
+Sentimiento (Resumen): Response: Based on the given text, "NEG" (Neutral) is the most appropriate label for this sentiment. The speaker expresses a lack of understanding or unease with the information provided to them, while also indicating that they do not have a strong emotional connection to it.
+Sentimiento (Puntos Clave): - "POS" (Positive)
+
+Based on the given text, the Top 3 Key Points from this text are:
+1. "No sé si es bueno lo que yo siento" (I don't know if it's good or not) - This statement suggests that the speaker has some doubt or uncertainty about the quality of what they heard or saw, which could be interpreted as a positive sentiment. The example provided in the text, "No sé si es bueno lo que yo siento", supports this interpretation.
+2. "Temo asustarté con decírtelos" (I feel scarred of telling you) - This statement suggests that the speaker is hesitant or afraid to tell someone about what they heard or saw, which could be interpreted as a negative sentiment. The example provided in the text, "Y es que a tu s labios no los entiendo", supports this interpretation.
+3. "Y es que a tu s labios no los entiendo" (You have no idea what I'm thinking about) - This statement suggests that the speaker has no idea or understanding of what the other person is thinking, which could be interpreted as a negative sentiment. The example provided in the text, "Temo asustarté con decírtelos", supports this interpretation.
+Overall, based on the given text, these Top 3 Key Points from this text are:
+1. "No sé si es bueno lo que yo siento" (I don't know if it's good or not) - This statement suggests a positive sentiment and could be interpreted as such based on the example provided in the text, "No sé si es bueno lo que yo siento".
+2. "Temo asustarté con decírtelos" (I feel scarred of telling you) - This statement suggests a negative sentiment and could be interpreted as such based on the example provided in the text, "Y es que a tu s labios no los entiendo".
+3. "Y es que a tu s labios no los entiendo" (You have no idea what I'm thinking about) - This statement suggests a negative sentiment and could be interpreted as such based on the example provided in the text, "Temo asustarté con decírtelos".

@@ -1,0 +1,58 @@
+Análisis de: transcripciones\transcripcion_dJ9OzphOxv4.txt
+
+Resumen:
+Summarize the text in 2 concise sentences:
+
+1. "No sé si es bueno lo que yo siento, temo asustarté con decírtelos, joder lo que tenemos." (Translation: I don't know if it's good or bad what you're saying to me, I worry about your opinions and my own.)
+2. "Y es que a tu s labios no les entiendo, cómo quisiera que tu corazón viniera con subtítulos." (Translation: And since you have those lips, I don't understand how you can even think about subtitles.)
+
+Puntos Clave:
+Key Points:
+1. No sé si es bueno lo que yo
+siento, temo asustarté con decírtelos, joder lo que tenemos.
+2. Y es que a tu s labios no los entiendo.
+3. Yo no los entiendo.
+4. De repeente no funciona, de repeente me obsesionas,
+ahora lo casual se me pasó de modo, no quiero una horra,
+no quiiero una horra, cómo no quiero una horra.
+5. Verte con otra persona, pega como una pistolá, y duele, duele, duele, duele, cómo duele.
+6. No sé si es bueno lo que yo
+siento,
+temo asustarté con decírtelos, joder lo que tenemos.
+7. Y es que a tus labios no los entiendo.
+8. Yo no los entiendo.
+9. Cómo quisiera que tu corazón
+viniera con subtítulos.
+10. Ya me advirtieron sobre tí, que no ereces bueno para mí,
+pero ese error lo comejuntí, me guista más de lo que quiero.
+11. Y yo que no me iba a ligar, ya me hiéis más de lo que quiero
+admitir.
+12. De repeente no funciona,
+de repeente me obsesionas,
+ahora lo casual se me pasó de modo, no quiero una horra,
+no quiiero una horra, cómo no quiero una horra.
+13. Verte con otra persona pega como una pistolá, y duele, duele, duele, duele, cómo duele.
+14. No sé si es bueno lo que yo
+siento,
+temo asustarté con decírtelos, joder lo que tenemos.
+15. Y es que a tus labios no los entiendo.
+16. Yo no los entiendo.
+17. Cómo quisiera que tu corazón
+viniera con subtítulos.
+18. Ya me advirtieron sobre tí, que no ereces bueno para mí,
+pero ese error lo comejuntí, me guista más de lo que quiero.
+19. Y yo que no me iba a ligar, ya me hiéis más de lo que quiero
+admitir.
+20. De repeente no funciona,
+de repeente me obsesionas,
+ahora lo casual se me pasó de modo, no quiero una horra,
+no quiiero una horra, cómo no quiero una horra.
+
+Sentimiento (Resumen): 1. "No sé si es bueno lo que yo siento, temo asustaré con decirles, me preocupo por lo que tenemos." (Translation: I don't know if it's good or bad what you're saying to me, I worry about your opinions and my own.)
+2. "Y es que a tus labios no les entiendo, cómo podrías que tu corazón viniera con subtítulos." (Translation: And since you have those lips, I don't understand how you can even think about subtitles.)
+Sentimiento (Puntos Clave): Response ONLY with one of the following labels:
+- "POS" (Positive)
+- "NEG" (Neutral)
+- "NEU" (Neutral)
+
+The given text contains positive and neutral statements, but it is unclear which label applies to each statement. Therefore, only one label will be used for the response.

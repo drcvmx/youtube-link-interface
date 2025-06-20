@@ -29,12 +29,19 @@ const PROMPT_TEMPLATES = {
 
 export async function POST(request: NextRequest) {
   try {
-    // Eliminamos la extracción de URL de video; ahora leemos un archivo local fijo
-    const filePath = path.join(process.cwd(), 'public', 'ejemplo1.txt');
-    const fileContent = await readLocalTextFile(filePath);
+    const { transcriptionFilePath } = await request.json(); // Obtener la ruta del archivo de transcripción del cuerpo de la solicitud
+
+    if (!transcriptionFilePath) {
+      return NextResponse.json({ error: "No se proporcionó la ruta del archivo de transcripción." }, { status: 400 });
+    }
+
+    // Construir la ruta completa al archivo de transcripción en el directorio público
+    const fullTranscriptionFilePath = path.join(process.cwd(), 'public', transcriptionFilePath);
+
+    const fileContent = await readLocalTextFile(fullTranscriptionFilePath);
 
     if (!fileContent) {
-      return NextResponse.json({ error: "Could not read local text file. Please ensure 'public/ejemplo1.txt' exists." }, { status: 500 });
+      return NextResponse.json({ error: `No se pudo leer el archivo de transcripción: ${transcriptionFilePath}.` }, { status: 500 });
     }
 
     const summary = await queryOllama(PROMPT_TEMPLATES.summary.replace("{text}", fileContent.slice(0, 3000)));
@@ -42,9 +49,8 @@ export async function POST(request: NextRequest) {
     const sentimentSummary = await queryOllama(PROMPT_TEMPLATES.sentiment.replace("{text}", summary));
     const sentimentPoints = await queryOllama(PROMPT_TEMPLATES.sentiment.replace("{text}", keyPoints));
 
-    // Definimos savedFilePath aquí para asegurarnos de que esté disponible en la respuesta
     let savedFilePath: string | null = null;
-    const textContentForSave = `Análisis de: ejemplo1.txt\n\nResumen:\n${summary}\n\nPuntos Clave:\n${keyPoints}\n\nSentimiento (Resumen): ${sentimentSummary}\nSentimiento (Puntos Clave): ${sentimentPoints}`;
+    const textContentForSave = `Análisis de: ${transcriptionFilePath}\n\nResumen:\n${summary}\n\nPuntos Clave:\n${keyPoints}\n\nSentimiento (Resumen): ${sentimentSummary}\nSentimiento (Puntos Clave): ${sentimentPoints}`;
     const fileName = `analysis_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
     const filePathForSave = path.join(process.cwd(), 'public', fileName);
     try {
@@ -52,14 +58,14 @@ export async function POST(request: NextRequest) {
       savedFilePath = `/${fileName}`; // Ruta pública para descarga
       console.log(`Análisis guardado en ${savedFilePath}`);
     } catch (fileError: any) {
-      console.error(`Error saving analysis to file: ${fileError.message}`);
+      console.error(`Error al guardar el archivo de análisis: ${fileError.message}`);
       savedFilePath = null;
     }
 
     return NextResponse.json({
-      analyzedFile: 'ejemplo1.txt',
+      analyzedFile: transcriptionFilePath, // Reflejar la ruta del archivo de entrada
       timestamp: new Date().toISOString(),
-      savedFilePath, // ¡Aseguramos que savedFilePath se devuelva!
+      savedFilePath,
       summary: {
         text: summary,
         sentiment: sentimentSummary,

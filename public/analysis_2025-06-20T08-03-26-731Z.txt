@@ -1,0 +1,21 @@
+Análisis de: transcripciones\transcripcion_dJ9OzphOxv4.txt
+
+Resumen:
+Summarize the text in 2 concise sentences:
+
+1. "No sé si es bueno lo que yo siento, temo asustarté con decírtelos, joder lo que tenemos." (I don't know if it's good or bad what I feel, I worry about translating your words.)
+
+Puntos Clave:
+1. No sé si es bueno lo que yo siento, temo asustarté con decírtelos, joder lo que tenemos. Estoy preocupado por las palabras y la información que se nos da en nuestra vida diaria.
+2. Y es que a tu sello no les entiendo, cómo quisiera que tu corazón viniera con subtítulos. No sé si estás hablando de algo importante o simplemente te preocupas por sus pensamientos.
+3. De repente no funciona, de repente me obsesionas, ahorra lo casual se me pasó de moda, no quiero una hora, yo las que he estado esperándote, todas.
+4. Verte con otra persona, pega como una pistolas, y duele, duele, duele, duele, cómo duele. No sé si es bueno. Lo que yo siento.
+5. Lo que yo siento. Temo asustarté con decírtelos, joder lo que tenemos. Y es que a tu sello no les entiendo, cómo quisiera que tu corazón viniera con subtítulos.
+6. Y es que a tu sello no les entiendo, cómo quisiera que tu corazón viniera con subtítulos. No sé si es bueno. Lo que yo siento.
+7. De repente no funciona, de repeenté me obsesionas, ahorra lo casual se me pasó de moda, no quiero una horra, yo las que he estado esperándote, todas.
+8. Verte con otra persona, pega como una pistolas, y duele, duele, duele, duele, cómo duele. No sé si es bueno. Lo que yo siento.
+9. Lo que yo siento. Temo asustarté con decírtelos, joder lo que tenemos. Y es que a tu sello no les entiendo, cómo quisiera que tu corazón viniera con subtítulos.
+10. Y es que a tu sello no les entiendo, cómo quisiera que tu corazón viniera con subtítulos. No sé si es bueno. Lo que yo siento.
+
+Sentimiento (Resumen): Response: "NEG" (Neutral)
+Sentimiento (Puntos Clave): Response: Based on the given text, the sentiment is one of negativity towards the speaker's experience, expressed through a variety of negative words such as "horror," "doubt," and "obsession." The speaker expresses their fear or discomfort with the speaker's thoughts and actions, as well as their uncertainty about what they are experiencing. The overall tone is one of distress and despair.
