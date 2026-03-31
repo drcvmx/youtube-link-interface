@@ -3,28 +3,40 @@ import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
 const OLLAMA_API_URL = "http://localhost:11434/api/generate"
-const MODEL_NAME = "tinyllama"
+const MODEL_NAME = "qwen2.5:1.5b"
 // const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY; // Ya no necesitamos la clave de API de YouTube
 
 const PROMPT_TEMPLATES = {
   summary: `
-    Summarize this text in 2 concise sentences.
-    Focus on key facts and maintain neutral tone.
-    Text: '{text}'
-  `,
-  key_points: `
-    Extract the TOP 3 KEY POINTS from this text.
-    Use bullet points (-) and be factual.
-    Text: '{text}'
-  `,
-  sentiment: `
-    Classify the sentiment of this text as:
-    - "POS" (Positive)
-    - "NEG" (Negative) 
-    - "NEU" (Neutral)
-    Respond ONLY with one of these 3 labels.
-    Text: '{text}'
-  `,
+Eres un asistente experto en resumir.
+Resume los subtítulos de este video de YouTube en exactamente 2 oraciones concisas en ESPAÑOL.
+Enfócate solo en la conclusión general del video y mantén un tono neutral.
+Texto principal (transcripción):
+'{text}'
+Resumen: `,
+  core_idea: `
+Eres un experto analista de contenido.
+Extrae exactamente la IDEA CENTRAL (el mensaje o tesis principal) del creador del video de YouTube basándote en la siguiente transcripción en ESPAÑOL.
+Responde con solo 1 oración potente y directa. No agregues saludos.
+Transcripción del video:
+'{text}'
+Idea Central: `,
+  pros_cons: `
+Eres un asistente experto evaluador de videos.
+Basado estrictamente en la transcripción de este video de YouTube, enumera exhaustivamente los PUNTOS POSITIVOS (Pros) y los PUNTOS NEGATIVOS (Contras) del producto o tema analizado en el video.
+Responde en ESPAÑOL siguiendo este formato estricto:
+
+PROS:
+- (punto 1)
+- (punto 2)
+
+CONTRAS:
+- (punto 1)
+- (punto 2)
+
+No inventes información que no esté en el video.
+Texto (Transcripción): '{text}'
+Análisis: `,
 }
 
 export async function POST(request: NextRequest) {
@@ -45,12 +57,11 @@ export async function POST(request: NextRequest) {
     }
 
     const summary = await queryOllama(PROMPT_TEMPLATES.summary.replace("{text}", fileContent.slice(0, 3000)));
-    const keyPoints = await queryOllama(PROMPT_TEMPLATES.key_points.replace("{text}", fileContent.slice(0, 3000)));
-    const sentimentSummary = await queryOllama(PROMPT_TEMPLATES.sentiment.replace("{text}", summary));
-    const sentimentPoints = await queryOllama(PROMPT_TEMPLATES.sentiment.replace("{text}", keyPoints));
+    const coreIdea = await queryOllama(PROMPT_TEMPLATES.core_idea.replace("{text}", fileContent.slice(0, 3000)));
+    const prosCons = await queryOllama(PROMPT_TEMPLATES.pros_cons.replace("{text}", fileContent.slice(0, 3000)));
 
     let savedFilePath: string | null = null;
-    const textContentForSave = `Análisis de: ${transcriptionFilePath}\n\nResumen:\n${summary}\n\nPuntos Clave:\n${keyPoints}\n\nSentimiento (Resumen): ${sentimentSummary}\nSentimiento (Puntos Clave): ${sentimentPoints}`;
+    const textContentForSave = `Análisis de: ${transcriptionFilePath}\n\nResumen:\n${summary}\n\nIdea Central:\n${coreIdea}\n\nPros y Contras:\n${prosCons}`;
     const fileName = `analysis_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
     const filePathForSave = path.join(process.cwd(), 'public', fileName);
     try {
@@ -66,14 +77,9 @@ export async function POST(request: NextRequest) {
       analyzedFile: transcriptionFilePath, // Reflejar la ruta del archivo de entrada
       timestamp: new Date().toISOString(),
       savedFilePath,
-      summary: {
-        text: summary,
-        sentiment: sentimentSummary,
-      },
-      key_points: {
-        text: keyPoints,
-        sentiment: sentimentPoints,
-      },
+      summary,
+      coreIdea,
+      prosCons
     });
   } catch (error: any) {
     console.error("Error in local text file analysis API:", error);
@@ -101,7 +107,8 @@ async function queryOllama(prompt: string): Promise<string> {
     prompt,
     stream: false,
     options: {
-      temperature: 0.3,
+      temperature: 0.5,
+      repeat_penalty: 1.2,
       num_ctx: 2048,
       num_thread: 4,
     },

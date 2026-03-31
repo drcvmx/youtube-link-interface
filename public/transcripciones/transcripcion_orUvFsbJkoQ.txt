@@ -1,0 +1,409 @@
+¡Bienvenidos a TuAppleMundo! Yo soy Nacho y
+hoy os traigo un vídeo que sé que muchos
+estabais esperando como agua de mayo. Y es que
+ya tenemos sobre la mesa los nuevos MacBook
+Pro de parte de Apple y claro, os entra la duda
+existencial más razonable: ¿me voy a por el
+MacBook Pro M5, a por el Pro, o me lío la manta a
+la cabeza y me voy a por el M5 Max? Pues,
+tranquilos, que en TuAppleMundo los hemos
+puesto a los tres en el laboratorio para sacaros de
+dudas con datos reales. Se acabaron los
+tecnicismos aburridos, os voy a contar la
+pura verdad, la que te duele tanto en la cartera y la
+que notas cuando le metes caña a este portátil, que
+es una nave.
+La movida de esta generación M5 es que Apple ha
+cambiado un poco las reglas del juego de cómo
+era hasta ahora. No se trata solo de que el
+procesador vaya más rápido, que también, sino de
+cómo han rediseñado las tripas. Han metido lo que
+llaman la arquitectura Fusion, que para que nos
+entendamos, es como si hubieran pegado dos
+chips con chicle, pero del bueno. Esto hace que
+todo vaya más fluido, que se caliente menos y que,
+sobre todo, notes que el Mac vuela cuando le
+exiges. Pero ¡ojo!, que no todo el monte es orégano y
+hay cositas que tienes que saber antes de soltar la
+pasta. Para esta comparativa tenemos 3 de estos
+MacBooks, en concreto, un MacBook Pro de 14
+pulgadas con el M5 normal... bueno, "normal" es un
+decir. Otro de 16 pulgadas con el M5 Pro y la
+bestia parda, este de 14 pulgadas con el M5 Max.
+Todos ellos con 24 GB de memoria RAM, menos el
+Max, que por narices te obliga a llevar 36 GB como
+mínimo. Ya sabéis cómo se las gasta Apple con
+esto. Así que, sin más rodeos, vamos a meterle el
+bisturí a estos 3 titanazos a ver cuál renta más
+según lo que hagas en tu día a día. Antes de
+empezar, decirte que un 90 % de la gente que ve
+estos vídeos de TuAppleMundo no está suscrita,
+así que si mañana sale una noticia, una filtración
+relevante sobre el próximo iPhone o algo de
+utilidad como, por ejemplo, esta comparativa, te lo
+vas a perder. Así que suscríbete y activa la
+campanita, que es totalmente gratis. Y a ver,
+lo primero antes de volvernos locos es cómo han
+bautizado ahora a los núcleos de los procesadores.
+Hasta ahora teníamos
+los núcleos de rendimiento para meterle tralla y
+los de eficiencia para cuando estabas leyendo
+pues el Marca o viendo mis vídeos, por ejemplo.
+Pues bien, ahora resulta que al núcleo más bestia
+de todos lo llaman "súper núcleos". Suena a película
+de Marvel, ya lo sé. Y los que antes eran los núcleos
+de eficiencia, pues resulta que ahora los llaman
+núcleos de rendimiento. Es decir, es como si
+hubieran subido un escalón más, por así decirlo. ¿Y
+por qué nos lían así? Pues porque han rediseñado
+totalmente los transistores y ahora esos núcleos,
+consumiendo muy poco, rinden que da gusto. Si
+miramos los test brutos, por ejemplo el de Geekbench,
+pues nos canta todas las verdades en el
+rendimiento de un solo núcleo, es decir, cuando
+usas una aplicación que no aprovecha varios
+núcleos a la vez. Los tres están prácticamente
+empatados, rozando los 4.300 puntazos. Ahí el M5
+base pues no se queda atrás. El bofetón viene
+cuando le pides al procesador que haga varias
+cosas a la vez, es decir, multinúcleo. El M5 se
+queda en unos 17.600 puntos, que no está nada mal,
+pero es que el Pro y el Max se disparan hasta más
+de 28.000 y 29.000 puntos respectivamente, o sea,
+el doble. ¿Qué significa esto en el mundo real? Pues
+que si utilizas el Mac, por ejemplo, para escribir
+guiones como yo, navegar o editar vídeos facilitos,
+el M5 base te sobra por todos lados y la batería te
+va a durar la vida misma. Pero si eres un picateclas
+empedernido que compila código a lo loco o, por
+ejemplo, un productor musical metiendo 100.000
+pistas, pues esos 18 núcleos del M5 Pro o del Max,
+que en este caso tienen los mismos en la CPU, son
+los que te van a salvar de tirones en el pelo. Así
+que vas a notar que el dinero que has pagado se
+traduce en tiempo que ganas. Esto, por supuesto,
+que tú tengas. Y ¡ojo!, porque he dicho una cosa
+bastante interesante, y es que en la CPU estos dos
+modelos, tanto el Pro como el Max, tienen los
+mismos núcleos: 18.
+Pero, pero, pero... eso es porque en el M5 Pro, como
+decía, tenemos el modelo de 16 pulgadas, aquí se
+igualan los dos. Pero claro, si cogiéramos el M5 Pro
+de 14 pulgadas, pues ya tendríamos 15 núcleos en
+vez de esos 18. Así que, como veis, está todo
+bastante escalonado. Vale, y donde verdaderamente
+se separan los normales de los Pro es en
+la gráfica. Aquí es donde Apple te dice: "A ver,
+enséñame cuánta pasta tienes", porque el M5
+pelado viene con 10 núcleos en la gráfica.
+Para editar tus vídeos en 4K vas sobrado, pero si
+saltas al M5 Pro, de golpe te plantas en los
+20 núcleos. Y si te vas al Max, la broma sube
+a 32 núcleos en la gráfica. Esto es como pasar de
+un patinete a un Ferrari, literalmente. Bueno, o de
+un Ferrari a una nave espacial, más bien. Y ¡ojo! a
+los datos de Geekbench usando Metal para
+la gráfica, que es lo que utiliza Apple,
+básicamente. El M5 saca unos 77.000 puntos,
+el Pro 138.000, pero es que el M5 Max se sube a
+los 190.000 puntos. Es una auténtica barbaridad.
+En programas de 3D como Blender, por ejemplo,
+los resultados son aplastantes. En el
+benchmark de Monster, por ejemplo,
+de renderizado, pues con la gráfica el M5
+tarda su tiempo, unos 768 samples. El M5 Pro lo
+hace el doble de rápido, 1.550, y el Max vuela
+hasta los 2.400 samples. Se te queda la cara
+de tonto viendo cómo mastica el 3D. Pero la
+guinda del pastel es para los que os mola el tema
+de la inteligencia artificial, porque en la gráfica
+Apple ha metido aceleradores neuronales dentro
+de cada uno de los núcleos, tanto en el Pro como
+en el Max. Esto es, de verdad, magia negra.
+Está muy pensado también para
+inteligencia artificial, pero el M5 Pro y el M5 Max te
+van a ir como un tiro. Por ejemplo, en el
+benchmark 3DMark de Wild Life Extreme se
+dispara a los 218 frames por segundo. Apple ya no
+hace Macs solamente para trabajo, os lo garantizo.
+Si queréis, por ejemplo, jugar a algún videojuego, yo
+creo que podéis jugar al Cyberpunk, y es que vais a
+pasar de los 60 FPS pero tranquilísimamente. Y
+vamos ahora con un tema que suele ser un poco
+un jarro de agua fría, que es la memoria RAM. En los
+chips de Apple la memoria está pegada, por así
+decirlo, unificada al procesador, y es decir, que el
+procesador y la gráfica beben del mismo vaso, por
+así decirlo. Esto hace que todo vaya rapidísimo,
+pero claro, no puedes cambiarla después. El M5 que
+hemos probado, como decía, tiene 24 GB de RAM,
+que para mí es el mínimo si quieres el Mac durante
+años sin llorar. Con 16 GB, si abres el Premiere y
+un par de pestañas en Chrome, empieza ya a tirar
+del disco duro y te lo vas a fundir antes. Que va
+a funcionar bien, pero bueno, te va a durar menos.
+Pero lo que no te contarán en la tienda es el ancho
+de banda, es decir, lo rápido que pasa la
+información por la tubería de la memoria,
+por así decirlo. El M5 base tiene una tubería,
+por así decirlo, de 153 GB por segundo. El Pro lo
+duplica hasta los 307 y el Max, pues, tiene una
+pedazo de tubería de 460 GB por segundo. Esto es
+vital si, por ejemplo, vas a manejar vídeos en 8K o
+archivos gigantes, que bueno, pues de nada te
+sirve tener muchísima potencia si luego la
+memoria no va lo suficientemente rápido para leer
+estos archivos. Y hablando precisamente de
+leer archivos, mirad los test de velocidad
+de Blackmagic. El disco duro del M5 base escribía
+a 6,4 GB.
+Y
+¡ojo!, que no está nada mal, pero es que el Pro y el
+Max se plantan en unos brutales 11 o 12 GB en
+escritura y en lectura. Son cifras, de verdad,
+para marearse. Si estás pasando gigas y gigas
+de archivos, o por ejemplo yo que utilizo un
+montón de vídeos en calidad 4K y demás que son
+archivos muy grandes, pues es que esto es una
+auténtica gozada, te salva muchísimo tiempo.
+Y llegamos ahora a un poquito de salseo:
+el calentamiento. Porque muchos vais a pensar:
+"Me compro el portátil de 14 pulgadas con
+el procesador más bestia, el M5 Max, y tengo un
+pepino en tamaño mini". Pues cuidadito, porque la
+física es bastante puñetera aquí. Meter ese
+procesador tan potente en una caja tan pequeña
+es como meter un motor V8 en un SEAT Panda.
+Cuando le pides que trabaje a tope durante un
+buen rato, pues el portátil de 14 pulgadas no tiene
+tanto espacio para sacar el calor con los
+ventiladores y va a empezar a sonar como el
+reactor de un avión. Pero lo peor no es el ruido,
+es el estrangulamiento térmico. Cuando el chip
+detecta que se está calentando demasiado,
+pues para evitar fundirse baja su propia velocidad.
+Así que, si tú has pagado por un M5 Max, pero al
+cuarto de hora de renderizar un vídeo,
+por ejemplo, te está rindiendo como un
+chip inferior, pues en las pruebas sostenidas de
+Cinebench se nota un pequeño bajón. Y es que el
+de 14 pulgadas se ahoga rápido porque el sistema
+capa el consumo a unos 45 vatios para no
+salir ardiendo. En cambio, el MacBook Pro de 16
+pulgadas con el M5 Pro es la jugada maestra,
+yo creo. Al ser más grande, pues tiene más
+espacio para disipar el calor y ventiladores más
+tochos que giran más despacio y hacen
+menos ruido. El bicho aguanta tralla todo el día sin
+despeinarse y sin bajar el rendimiento. De hecho,
+a la larga, un 16 pulgadas con el Pro puede ser
+hasta un 30 % más rápido que un 14 pulgadas con
+el Max. Sí, has oído bien, el chip inferior rindiendo
+mejor a largo plazo simplemente porque no
+se asfixia. Para que veáis que el tamaño a veces
+sí que importa. Evidentemente, la jugada ya
+absolutamente maestra sería el de 16 pulgadas
+con el M5 Max. Pero también otra cosa que hay
+que tener en cuenta es que el modelo es bastante
+más grande y, por lo tanto, pierde portabilidad,
+que es precisamente la gracia de un MacBook.
+Y, si como yo te dedicas al mundo del vídeo,
+este apartado de ahora te va a interesar tela.
+Porque, más allá de los núcleos brutos, los M5 y
+M5 Pro tienen un motor para decodificar, otro para
+codificar y uno específico para el formato ProRes
+de Apple, que es el formato mejor de Apple.
+Además, ahora soportan el códec AV1
+por hardware, que es el que usa, por ejemplo,
+YouTube para no fundirte la batería. Con esto, si te
+pones a editar vídeo en Final Cut o Premiere a
+resolución 4K, el M5 base y el Pro se lo comen
+con patatas. No vas a notar tirones, la línea de
+tiempo va a ir como la seda y no hace falta crear
+archivos pequeños, es decir, proxies,
+para poder trabajar. Es una maravilla. Pero es que
+encima el M5 Max va un paso más allá. Es la
+fuerza bruta al servicio del montaje. Han doblado
+los motores: dos para codificar, dos duales
+para ProRes. De verdad que esto es una maravilla.
+¿Y esto para qué sirve? Pues, si estás montando,
+por ejemplo, el próximo taquillazo de Hollywood en
+8K RAW con varias capas de vídeo a la vez,
+pues el M5 Max ni suda. Lo mejor es que, al usar
+estos motorcillos, el procesador central y la gráfica
+se quedan prácticamente libres, así que puedes
+estar exportando un vídeo súper tocho y mientras
+tanto usar Photoshop o jugar sin que el Mac se
+quede pillado. Los tiempos de exportación bajan
+también drásticamente, a veces de horas a
+unos minutos. Es tiempo que ganas para tomarte
+algo o irte a dormir, que también se agradece
+bastante en esas noches de trabajo. En el tema de
+la pantalla, por ejemplo, Apple se ha portado y no
+ha hecho de las suyas. Aquí no importa si te
+gastas lo mínimo o te vas a por el modelo Max
+más caro. Los tres MacBooks llevan el mismo
+pedazo de panel, la famosa pantalla Liquid
+Retina XDR. Y os digo una cosa, es una de las
+mejores pantallas que vas a ver en un portátil.
+Usa tecnología Mini-LED, lo que significa que los
+negros son muy, muy puros, nivel pozo sin fondo.
+Y para los que os dediquéis al color o simplemente
+os guste ver series a oscuras, pues es
+una gozada. Y el brillo es una absoluta locura.
+Ahora llega hasta los 1000 nits sostenidos en
+exteriores reproduciendo contenido SDR. Esto es
+clave porque, si te da por trabajar en una terraza
+tomando el sol, vas a ver la pantalla perfectamente
+sin tener que entrecerrar los ojos. Y ya, si pones
+vídeos en HDR, pues hay destellos y picos que
+llegan hasta los 1600 nits. Así necesitas gafas
+de sol. Además, tiene la tecnología ProMotion a
+120 Hz, que hace que mover el ratón o hacer scroll
+sea súper fluido. Parece que flotas. La gran
+novedad de esta generación es que a todos les
+puedes poner, pagando más, evidentemente,
+el cristal nanotexturizado. Esto ya lo habíamos
+visto en los monitores de escritorio carísimos de
+Apple o, por ejemplo, en el iPad o en
+modelos anteriores. No es una simple pegatina
+mate, sino que el propio cristal está tallado a nivel
+microscópico para que la luz no rebote. Si sueles
+currar en sitios con luces muy brillantes, por
+ejemplo, como en rodajes o cafeterías o demás,
+pues esto es un salvavidas. Eso sí, ten cuidado al
+limpiarlo y usa el trapito especial que te viene en la
+caja porque es muy, muy delicado. Y hablemos
+ahora de enchufar cosas en estos MacBook.
+Aquí tenemos buenas noticias porque los modelos
+M5 Pro y M5 Max vienen ahora con la nueva
+conexión Thunderbolt 5. Y estarás pensando: "¿Y a
+mí qué?". Pues resulta que esto tiene un ancho de
+banda de 120 GB, que es el doble que antes.
+Esto te permite enchufar discos duros externos
+ultra rápidos, como si fueran servidores de
+empresa, o conectar, por ejemplo, varios cacharros
+a la vez sin que se peleen por la velocidad de
+tu dispositivo. El modelo M5 base tiene
+Thunderbolt 4, así que, bueno, si esto te importa,
+ya sabes. Pero el verdadero drama viene cuando
+quieres conectar monitores externos. Cuidado con
+esto, porque el M5 base está un poquito capado.
+Solo soporta dos monitores externos. Eso sí,
+aunque de muchísima calidad, pero, aunque cierres
+la tapa del portátil, no te va a dejar sacar
+más pantallas. Si eres de los que tienen montada
+una nave espacial en el escritorio, el M5 normal se
+te puede quedar corto y te va a tocar tirar de
+inventos raros para poder poner más pantallas.
+En cambio, el M5 Pro ya te deja poner hasta tres
+monitores y el M5 Max es increíble. El rey del
+mambo ya, porque soporta hasta cuatro monitores
+externos de altísima resolución a la vez.
+Puedes tener la pantalla del portátil, dos monitores
+6K y hasta una tele 8K todo enchufado. Es brutal
+para editores de vídeo, por ejemplo,
+analistas financieros o gente que necesita tener mil
+cosas abiertas a la vez. Además, todos, por
+supuesto, vienen con el puerto HDMI y el lector de
+tarjetas, que para los que trabajéis con cámaras lo
+agradeceréis en el alma. El mítico cargador
+MagSafe, que se suelta si tropiezas con el cable, y
+Wi-Fi 7 para también volar por internet. Y, en la
+batería de estos MacBook, preparaos, porque Apple
+siempre nos vende que sus chips son mega
+eficientes y es verdad, pero la física manda. Y el
+MacBook Pro de 14 pulgadas con el M5 base aquí
+va a ser el rey de aguantar, porque el procesador
+no traga tantísima energía y la batería puede dar
+más de sí. Te puede durar un día entero
+sin problemas, navegando, escribiendo,
+viendo vídeos... Te olvidas del enchufe por completo.
+Cumple lo que promete y es el portátil perfecto
+para llevar de un lado a otro. El de 16 pulgadas
+con el M5 Pro es,
+honestamente, bastante perfecto también.
+Resulta que, por ley, en un avión no puedes llevar
+una batería de más de 100 Wh, pues Apple ha
+metido exactamente 100 Wh en el modelo de
+16. Y, aunque el M5 Pro chupa más energía, pues, al
+tener esa pedazo de pila, dura lo mismo o más que
+el M5 base. Para la gente que curra en movimiento,
+este bicho es un salvavidas. Aguanta horas y horas
+dándole caña, renderizando o programando.
+Para mí es el equilibrio perfecto. Pero ¿qué pasa
+con el M5 Max en el chasis de 14 pulgadas?
+Pues que aquí puede ser un poco sangría.
+Tienes el procesador más salvaje de todos
+chupando energía como si no hubiera un mañana,
+metido en una caja un poquito más pequeña, con
+una batería también, evidentemente, más pequeña,
+de unos 72 Wh. Si le aprietas con
+inteligencia artificial o con juegos, pues vas viendo
+cómo el porcentaje de batería va bajando. Te vas a
+pulir la batería en un abrir y cerrar de ojos. Al final
+acabas usándolo siempre enchufado a la pared,
+perdiendo toda la gracia de que sea un portátil.
+Si quieres el Max, hazte un favor y ve a por el de 16
+pulgadas o, ¡ojo!, y no lo exprimas tanto cuando
+tienes un tiempo limitado. Y también, para cargar
+estas bestias hace falta bastante chicha, porque el
+modelo M5 de 14 pulgadas viene con un cargador
+normalito de 70 W. Está bien, es ligero,
+pero resulta que el portátil admite carga ultra
+rápida si usas un cargador de 96 W, que te lo
+venden aparte o viene incluido si pagas por un
+procesador mejor. Si pillas el M5 Max de 14
+pulgadas, más te vale tener a mano el de 96 W
+para revivir toda esa batería.
+Y el modelo de 16 pulgadas, con esa batería
+masiva, viene con un cargador gigantesco de
+140 W. Es un buen trasto para llevar en
+la mochila, pero que te carga el Mac en
+un periquete, lo cual es de agradecer cuando vas
+con prisas. Todo esto, por supuesto, teniendo en
+cuenta que no viváis en la Unión Europea, porque,
+como sabéis, aquí ya los Mac no se venden con el
+cargador incluido. Es verdad que los precios han
+cambiado ligeramente para que te lo puedas
+comprar aparte y más o menos te saldría igual.
+Pero también es una cosa a tener en cuenta. ¡Ojo!,
+si quieres te ahorras el cargador si ya tienes uno
+en casa y, si no, pues te compras aparte el que
+tú quieras. Así que, resumiendo,
+¿cuál te comprarías? Pues si eres un usuario
+normal que programa cosillas, edita algún vídeo
+para YouTube o simplemente quieres un Mac que
+te dure mil años, el M5 base yo creo que es tu
+caballo ganador. Te ahorras una pasta y vas a ir
+sobrado de potencia y de batería.
+Pero si tu trabajo depende de rascar segundos al
+reloj, si trabajas, por ejemplo, con 3D complejo, si
+manejas vídeos pesadísimos o, por ejemplo, si
+exprimes IA en local, pues sí que vale la pena el
+salto a los modelos Pro o Max. Pero, y aquí viene mi
+consejo clave, si vas a por el M5 Pro o Max, por lo
+que más quieras, cómprate el modelo de 16
+pulgadas. Vas a tener mejor refrigeración, no se te
+va a capar el rendimiento, tendrás un poquito
+menos de ruido en los ventiladores y la batería no
+te va a dejar tirado a mitad de jornada.
+Hazme caso, la espalda os dolerá un poquito más
+al llevarlo, pero bueno, vuestra paciencia os lo
+agradecerá eternamente a la hora de trabajar.
+Y, llegados a este punto, te pregunto directamente
+a ti para que me dejes tu opinión: ¿tú qué harías
+con tu dinero? ¿Te sumarías a comprar la opción
+más cara y potente, o prefieres quedarte con
+opciones un poquito más asentadas como, por
+ejemplo, el M5 base y, sobre todo, 16 o
+14 pulgadas? Te leo muy atentamente en
+los comentarios. Si el vídeo te ha resultado útil y
+has aprendido algo nuevo, no olvides dejarme un
+like y suscribirte al canal para apoyar el contenido
+y no perderte las próximas novedades de Apple.
+Y antes de irte, justo por aquí en pantalla, te voy a
+dejar otros dos vídeos recomendados para que
+puedas seguir viendo y aprendiendo de tecnología.
+Así que espero que os haya gustado el vídeo y
+que nos veamos en el próximo vídeo.
