@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile } from "fs/promises";
-import * as path from "path";
 
 // Constantes
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434/api/generate";
@@ -87,22 +85,11 @@ export async function POST(request: NextRequest) {
     const coreIdea = await queryOllama(prompts.core_idea.replace("{text}", maxText));
     const prosCons = await queryOllama(prompts.pros_cons.replace("{text}", maxText));
 
-    let savedFilePath: string | null = null;
-    const textContentForSave = "Análisis de Texto Libre\\n\\nResumen:\\n" + summary + "\\n\\nIdea Central:\\n" + coreIdea + "\\n\\nPros y Contras:\\n" + prosCons;
-    const fileName = "analysis_text_" + new Date().toISOString().replace(/[:.]/g, '-') + ".txt";
-    const filePathForSave = path.join(process.cwd(), 'public', fileName);
-    try {
-      await writeFile(filePathForSave, textContentForSave, 'utf-8');
-      savedFilePath = "/" + fileName; 
-    } catch (fileError: any) {
-      console.error("Error al guardar el archivo de análisis: " + fileError.message);
-      savedFilePath = null;
-    }
+
 
     return NextResponse.json({
       analyzedFile: "Texto Libre (" + text.slice(0, 50).replace(/\\n/g, ' ') + "...)",
       timestamp: new Date().toISOString(),
-      savedFilePath,
       summary,
       coreIdea,
       prosCons

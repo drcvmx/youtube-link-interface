@@ -1,28 +1,39 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencias de Node
+node_modules/
+.pnp
+.pnp.js
 
-# dependencies
-/node_modules
+# Testing
+coverage/
 
-# next.js
-/.next/
-/out/
+# Next.js
+.next/
+out/
+build/
 
-# production
-/build
+# Entorno local (Keys)
+.env
+.env.local
+.env.*.local
 
-# debug
+# Python y Flask
+__pycache__/
+*.py[cod]
+*$py.class
+python-backend/venv/
+venv/
+env/
+ENV/
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
-# env files
-.env*
+# Vercel y Sistema Operativo
+.vercel/
+.DS_Store
 
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
-next-env.d.tspython-backend/venv/
-python-backend/__pycache__/
+next-env.d.ts
