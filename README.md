@@ -50,45 +50,46 @@ El proyecto rompe el monolito tradicional dividiéndose en tres engranajes princ
 
 ---
 
-## ⚙️ Instalación y Ejecución
+## ⚙️ Despliegue en Producción (Arquitectura V2)
 
-Al ser un sistema distribuido localmente, debes levantar todos los servicios para que la suite funcione.
+Esta versión V2 rompió la dependencia de `localhost` estricta para adoptar un aislamiento de grado B2B usando base de datos propia, proxy de Cloudflare, Autenticación y Cifrado Remoto.
 
-### 1. Requisitos Previos
-- Node.js (v18+)
-- Python 3.10+
-- `ffmpeg` instalado en tu sistema operativo (esencial para que Whisper pueda procesar audio).
-- Motor de `Ollama` activo con el modelo listo:
-  ```bash
-  sudo systemctl start ollama
-  ollama run qwen2.5:1.5b
-  ```
-
-### 2. Frontend (Next.js)
-Abre una terminal y ejecuta:
+### 1. Variables de Entorno `.env`
+El núcleo de la aplicación depende de este archivo en la raíz del proyecto para ensamblar los componentes de Next.js.
 ```bash
-# Instalar dependencias si no lo has hecho
-npm install
+NEXT_PUBLIC_SUPABASE_URL=https://db.tu-dominio.com
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ey... (Suministrada por Supabase)
+NEXT_PUBLIC_PYTHON_API_URL=https://backend.tu-dominio.com
 
-# Iniciar servidor de desarrollo
-npm run dev
+OLLAMA_URL=http://localhost:11434/api/generate
+MODEL_NAME=qwen2.5:1.5b
 ```
-La aplicación estará disponible de inmediato en `http://localhost:3000`.
 
-### 3. Backend (Python)
-Abre una segunda terminal, ubícate en la raíz del proyecto y entra a la carpeta de backend:
+### 2. Capa de Base de Datos (Supabase Local Docker)
+En el servidor Cachy OS, nos aseguramos que el clúster de base de datos corra constantemente:
+```bash
+cd ~/proyectos/supabase-local
+supabase start
+```
+
+### 3. Capa de Procesamiento Físico (Backend de Python)
+Abre una terminal, activa el entorno virtual y deja el bloque despachador de inteligencia corriendo:
 ```bash
 cd python-backend
-
-# Activa el entorno virtual (crucial en distribuciones como Arch Linux)
-source venv/bin/activate.fish  # O el equivalente bash/zsh
-
-# Instala los paquetes requeridos
+source venv/bin/activate.fish
 pip install -r requirements.txt
-
-# Inicia el motor Flask en el puerto 5000
 python app.py
 ```
+*(Corre puramente en Memoria RAM con `io.BytesIO`, evitando latencia de lecturas y escrituras L2 en discos duros al general Pdfs/Audios).*
+
+### 4. Capa Visual y Despliegue Público (Next.js & Cloudflared)
+Con los túneles Cloudflare y el entorno listo, se compilan y publican los nodos HTML interactivos de manera definitiva:
+```bash
+npm install
+npm run build
+npm start
+```
+*Si tienes el daemon de `cloudflared service` instalado apuntando a tu puerto 3000, 5000 y 54321, el sistema está oficialmente online accesible por TLS/HTTPS de punta a punta globalmente.*
 
 ---
 
