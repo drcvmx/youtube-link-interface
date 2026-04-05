@@ -5,8 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "VOC from Social Media",
-  description: "Extract voice of customer insights from YouTube content",
+  title: "DRCV Company - IA Suite",
+  description: "Plataforma B2B privada de Análisis de Inteligencia Artificial.",
     generator: 'v0.dev'
 }
 

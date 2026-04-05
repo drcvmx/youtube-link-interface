@@ -279,7 +279,11 @@ export default function YouTubeLinkSubmission() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4 transition-colors duration-300 flex items-center justify-center p-4 transition-colors duration-300">
       <div className="w-full max-w-2xl space-y-6">
-        <div className="flex justify-end w-full mb-4">
+        <div className="flex justify-between items-center w-full mb-4">
+          <div className="flex flex-col">
+            <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 tracking-tight">DRCV Company</h1>
+            <p className="text-gray-400 text-sm font-medium mt-1 uppercase tracking-widest pl-1">IA Suite V2</p>
+          </div>
           <Button variant="ghost" onClick={handleLogout} className="text-gray-400 hover:text-white hover:bg-gray-800">
             <LogOut className="w-4 h-4 mr-2" /> Cerrar Sesión
           </Button>
