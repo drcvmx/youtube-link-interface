@@ -107,7 +107,7 @@ export default function YouTubeLinkSubmission() {
 
     try {
       setMessage({ type: "success", text: "Transcribing video... Please wait." });
-      const pythonApiUrl = "http://127.0.0.1:5000/transcribir";
+      const pythonApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/transcribir`;
       const pythonApiResponse = await fetch(pythonApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -201,7 +201,7 @@ export default function YouTubeLinkSubmission() {
       const formData = new FormData();
       formData.append("file", audioFile);
 
-      const pythonApiUrl = "http://127.0.0.1:5000/transcribir-audio";
+      const pythonApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/transcribir-audio`;
       const pythonApiResponse = await fetch(pythonApiUrl, {
         method: "POST",
         body: formData,
@@ -249,7 +249,7 @@ export default function YouTubeLinkSubmission() {
     setMessage({ type: "success", text: "Generando reporte PDF profesional..." });
 
     try {
-      const pdfApiUrl = "http://127.0.0.1:5000/exportar-pdf";
+      const pdfApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/exportar-pdf`;
       const pdfResponse = await fetch(pdfApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
