@@ -22,10 +22,6 @@ app = Flask(__name__)
 CORS(app)
 
 
-TRANSCRIPTIONS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'public', 'transcripciones')
-
-os.makedirs(TRANSCRIPTIONS_DIR, exist_ok=True)
-
 def get_video_id(url):
     if "v=" in url:
         return url.split("v=")[1].split("&")[0]
@@ -88,19 +84,11 @@ def transcribir():
 
         # En v1.x cada entrada es un objeto con atributo .text (no un dict)
         texto = "\n".join([snippet.text for snippet in transcript])
-        
-        filename = f"transcripcion_{video_id}.txt"
-        filepath = os.path.join(TRANSCRIPTIONS_DIR, filename)
-
-        with open(filepath, "w", encoding="utf-8") as f:
-            f.write(texto)
 
         return jsonify({
             "message": "Transcripción generada correctamente",
             "video_id": video_id,
-            "archivo": filename,
-            "savedFilePath": os.path.join("transcripciones", filename),
-            "contenido": texto[:300] + "..." if len(texto) > 300 else texto
+            "text": texto
         })
 
     except NoTranscriptFound:
@@ -255,14 +243,6 @@ def exportar_pdf():
         as_attachment=True,
         download_name='Reporte_Analisis_IA.pdf'
     )
-
-@app.route("/descargar/<video_id>", methods=["GET"])
-def descargar(video_id):
-    path = os.path.join(TRANSCRIPTIONS_DIR, f"transcripcion_{video_id}.txt")
-    if os.path.exists(path):
-        return send_file(path, as_attachment=True)
-    else:
-        return jsonify({"error": "Archivo no encontrado"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
