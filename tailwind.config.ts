@@ -8,9 +8,37 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "*.{js,ts,jsx,tsx,mdx}"
   ],
+  safelist: [
+    { pattern: /bg-(red|blue|emerald|green|cyan|accent)-(400|500|600)/ },
+    { pattern: /hover:bg-(red|blue|emerald|green|cyan|accent)-(400|500|600)/ },
+    { pattern: /text-(red|blue|emerald|green|cyan|accent)-(400|500|600)/ },
+    { pattern: /border-(red|blue|emerald|green|cyan|accent)-(400|500|600)/ },
+  ],
   theme: {
   	extend: {
+      fontFamily: {
+        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'monospace'],
+      },
   		colors: {
+        'drcv-primary': '#00021D',
+        drcv: {
+          50: '#f0f0f5',
+          100: '#e0e1ea',
+          500: '#00021D',
+          600: '#000118',
+          900: '#000010',
+        },
+        accent: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))'
+        },
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -33,10 +61,7 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--muted))',
   				foreground: 'hsl(var(--muted-foreground))'
   			},
-  			accent: {
-  				DEFAULT: 'hsl(var(--accent))',
-  				foreground: 'hsl(var(--accent-foreground))'
-  			},
+
   			destructive: {
   				DEFAULT: 'hsl(var(--destructive))',
   				foreground: 'hsl(var(--destructive-foreground))'

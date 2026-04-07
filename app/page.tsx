@@ -1,544 +1,289 @@
-"use client"
+import React from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { ArrowRight, Ear, Eye, PlaySquare, ShieldCheck, Briefcase, Building, Users, Headphones, Cpu, Database, FileText } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-import { useState, useEffect, useRef } from "react"
-import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Youtube, CheckCircle, AlertCircle, Sun, FileText, Mic, Video, LogOut } from "lucide-react"
-
-interface Message {
-  type: "success" | "error";
-  text: string;
-}
-
-export default function YouTubeLinkSubmission() {
-  const [activeTab, setActiveTab] = useState<"youtube" | "text" | "audio" | "recording">("youtube")
-  const [youtubeUrl, setYoutubeUrl] = useState('')
-  const [rawText, setRawText] = useState('')
-  const [audioFile, setAudioFile] = useState<File | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [message, setMessage] = useState<Message | null>(null)
-  const [response, setResponse] = useState<any>(null)
-  
-  // Recording State
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const chunksRef = useRef<Blob[]>([])
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
-  
-  const router = useRouter()
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    router.push("/login")
-  }
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
-      mediaRecorderRef.current = mediaRecorder
-      chunksRef.current = []
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) chunksRef.current.push(e.data)
-      }
-
-      mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
-        const file = new File([blob], 'recording.webm', { type: 'audio/webm' })
-        setAudioFile(file)
-        
-        // Apagar el micrófono
-        stream.getTracks().forEach(track => track.stop())
-      }
-
-      mediaRecorder.start()
-      setIsRecording(true)
-      setRecordingTime(0)
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1)
-      }, 1000)
-    } catch (err: any) {
-      setMessage({ type: "error", text: "Microphone access denied or not available." })
-    }
-  }
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-      if (timerRef.current) clearInterval(timerRef.current)
-      setMessage({ type: "success", text: "Grabación guardada localmente. Lista para transcribir." })
-    }
-  }
-
-  const saveAnalysisToDb = async (sourceType: string, inputPreview: string, data: any) => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('analyses').insert({
-        user_id: user.id,
-        source_type: sourceType,
-        input_preview: inputPreview,
-        summary: data.summary,
-        core_idea: data.coreIdea,
-        pros_cons: data.prosCons
-      })
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    setIsLoading(true)
-    setMessage(null)
-    setResponse(null)
-
-    try {
-      setMessage({ type: "success", text: "Transcribing video... Please wait." });
-      const pythonApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/transcribir`;
-      const pythonApiResponse = await fetch(pythonApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: youtubeUrl }),
-      });
-
-      const pythonData = await pythonApiResponse.json();
-
-      if (!pythonApiResponse.ok) {
-        setMessage({ type: "error", text: pythonData.error || "Failed to transcribe YouTube video" });
-        return;
-      }
-
-      setMessage({ type: "success", text: "Transcription successful! Analyzing text with Agent..." });
-      const nextApiUrl = "/api/analyze-text";
-      const nextApiResponse = await fetch(nextApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: pythonData.text, sourceType: "youtube" }),
-      });
-
-      const nextData = await nextApiResponse.json();
-
-      if (nextApiResponse.ok) {
-        setMessage({ type: "success", text: "Analysis completed successfully!" });
-        await saveAnalysisToDb('youtube', youtubeUrl, nextData);
-        nextData.analyzedFile = youtubeUrl; // To show in the UI block
-        setResponse(nextData);
-      } else {
-        setMessage({ type: "error", text: nextData.error || "Failed to analyze transcribed text" });
-      }
-    } catch (error: any) {
-      setMessage({ type: "error", text: `Network error or unexpected issue: ${error.message}` });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const handleTextSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!rawText.trim()) {
-      setMessage({ type: "error", text: "Please enter some text to analyze." });
-      return;
-    }
-
-    setIsLoading(true)
-    setMessage(null)
-    setResponse(null)
-
-    try {
-      setMessage({ type: "success", text: "Analyzing raw text with Agent..." });
-
-      const nextApiUrl = "/api/analyze-text";
-      const nextApiResponse = await fetch(nextApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: rawText, sourceType: "text" }),
-      });
-
-      const nextData = await nextApiResponse.json();
-
-      if (nextApiResponse.ok) {
-        setMessage({ type: "success", text: "Text analysis completed successfully!" });
-        await saveAnalysisToDb('text', rawText.substring(0, 50), nextData);
-        setResponse(nextData);
-      } else {
-        setMessage({ type: "error", text: nextData.error || "Failed to analyze text" });
-      }
-    } catch (error: any) {
-      setMessage({ type: "error", text: `Network error: ${error.message}` });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const handleAudioSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!audioFile) {
-      setMessage({ type: "error", text: "Please select/record an audio file to transcribe." });
-      return;
-    }
-
-    setIsLoading(true)
-    setMessage(null)
-    setResponse(null)
-
-    try {
-      setMessage({ type: "success", text: "Transcribing audio offline with Whisper. This may take a moment depending on the file size..." });
-      const formData = new FormData();
-      formData.append("file", audioFile);
-
-      const pythonApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/transcribir-audio`;
-      const pythonApiResponse = await fetch(pythonApiUrl, {
-        method: "POST",
-        body: formData,
-      });
-
-      const pythonData = await pythonApiResponse.json();
-
-      if (!pythonApiResponse.ok) {
-        setMessage({ type: "error", text: pythonData.error || "Failed to transcribe audio file" });
-        return;
-      }
-
-      setMessage({ type: "success", text: "Transcription successful! Analyzing text with Agent..." });
-      const nextApiUrl = "/api/analyze-text";
-      const nextApiResponse = await fetch(nextApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: pythonData.text, sourceType: "audio" }),
-      });
-
-      const nextData = await nextApiResponse.json();
-
-      if (nextApiResponse.ok) {
-        setMessage({ type: "success", text: "Audio analysis completed successfully!" });
-        nextData.analyzedFile = `🎙️ Audio: ${audioFile.name || 'Grabación en Vivo'}`;
-        await saveAnalysisToDb(activeTab === 'recording' ? 'recording' : 'audio', audioFile.name || 'Voice Recording', nextData);
-        setResponse(nextData);
-      } else {
-        setMessage({ type: "error", text: nextData.error || "Failed to analyze transcribed text" });
-      }
-    } catch (error: any) {
-      setMessage({ type: "error", text: `Network error or unexpected issue: ${error.message}` });
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  const handleDownloadPDF = async () => {
-    if (!response) {
-      setMessage({ type: "error", text: "No analysis data available to export." });
-      return;
-    }
-
-    setIsLoading(true);
-    setMessage({ type: "success", text: "Generando reporte PDF profesional..." });
-
-    try {
-      const pdfApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/exportar-pdf`;
-      const pdfResponse = await fetch(pdfApiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...response, sourceType: activeTab === 'recording' ? 'audio' : activeTab }),
-      });
-
-      if (!pdfResponse.ok) throw new Error("Failed to generate PDF");
-
-      const blob = await pdfResponse.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'Reporte_Analisis_IA.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      setMessage({ type: "success", text: "Reporte PDF exportado con éxito." });
-    } catch (error: any) {
-      setMessage({ type: "error", text: `Error al generar PDF: ${error.message}` });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center p-4 transition-colors duration-300 flex items-center justify-center p-4 transition-colors duration-300">
-      <div className="w-full max-w-2xl space-y-6">
-        <div className="flex justify-between items-center w-full mb-4">
-          <div className="flex flex-col">
-            <h1 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 tracking-tight">DRCV Company</h1>
-            <p className="text-gray-400 text-sm font-medium mt-1 uppercase tracking-widest pl-1">IA Suite V2</p>
+    <div className="min-h-screen bg-drcv-primary text-drcv-50 font-mono tracking-widest uppercase selection:bg-accent-500 selection:text-white relative overflow-hidden">
+
+      {/* Grilla Holográfica (Control Center Aesthetic) */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(168,85,247,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(168,85,247,0.05)_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none" />
+
+      {/* Navigation */}
+      <nav className="border-b border-accent-500/20 bg-drcv-primary/90 backdrop-blur-md sticky top-0 z-50 shadow-[0_4px_30px_rgba(168,85,247,0.1)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Image src="/logosinfondo.png" alt="DRCV Company" width={110} height={35} className="object-contain drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" priority />
+            <span className="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-cyan-400 ml-2 drop-shadow-md">AISUITE</span>
           </div>
-          <Button variant="ghost" onClick={handleLogout} className="text-gray-400 hover:text-white hover:bg-gray-800">
-            <LogOut className="w-4 h-4 mr-2" /> Cerrar Sesión
-          </Button>
-        </div>
-
-        <div className="flex justify-between items-center bg-gray-900/50 p-2 rounded-lg backdrop-blur-sm border border-gray-800">
-          <div className="flex bg-gray-900 rounded-lg p-1 w-full max-w-2xl mx-auto text-xs sm:text-sm font-medium border border-gray-800">
-            <button
-              className={`flex-1 flex items-center justify-center py-2 px-2 rounded-md transition-colors ${activeTab === "youtube" ? "bg-gray-700 shadow-sm text-red-400" : "text-gray-400 hover:text-white"}`}
-              onClick={() => { setActiveTab("youtube"); setMessage(null); setResponse(null); }}
-              type="button"
-            >
-              <Youtube className="w-4 h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">YouTube Video</span>
-              <span className="sm:hidden">YouTube</span>
-            </button>
-            <button
-              className={`flex-1 flex items-center justify-center py-2 px-2 rounded-md transition-colors ${activeTab === "text" ? "bg-gray-700 shadow-sm text-blue-400" : "text-gray-400 hover:text-white"}`}
-              onClick={() => { setActiveTab("text"); setMessage(null); setResponse(null); }}
-              type="button"
-            >
-              <FileText className="w-4 h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Raw Text</span>
-              <span className="sm:hidden">Text</span>
-            </button>
-            <button
-              className={`flex-1 flex items-center justify-center py-2 px-2 rounded-md transition-colors ${activeTab === "audio" ? "bg-gray-700 shadow-sm text-purple-400" : "text-gray-400 hover:text-white"}`}
-              onClick={() => { setActiveTab("audio"); setMessage(null); setResponse(null); }}
-              type="button"
-            >
-              <Mic className="w-4 h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Local Audio</span>
-              <span className="sm:hidden">Audio</span>
-            </button>
-            <button
-              className={`flex-1 flex items-center justify-center py-2 px-2 rounded-md transition-colors ${activeTab === "recording" ? "bg-gray-700 shadow-sm text-green-400" : "text-gray-400 hover:text-white"}`}
-              onClick={() => { setActiveTab("recording"); setMessage(null); setResponse(null); }}
-              type="button"
-            >
-              <Video className="w-4 h-4 mr-1 lg:mr-2" />
-              <span className="hidden sm:inline">Grabar Audio</span>
-              <span className="sm:hidden">Grabar</span>
-            </button>
-          </div>
-        </div>
-
-        <Card className="w-full bg-gray-900 border-gray-800">
-          <CardHeader className="text-center">
-            <div className={`mx-auto mb-4 w-12 h-12 rounded-full flex items-center justify-center ${activeTab === "youtube" ? "bg-red-900" : activeTab === "text" ? "bg-blue-900" : activeTab === "audio" ? "bg-purple-900" : "bg-green-900"}`}>
-              {activeTab === "youtube" ? <Youtube className="w-6 h-6 text-red-400" /> : activeTab === "text" ? <FileText className="w-6 h-6 text-blue-400" /> : activeTab === "audio" ? <Mic className="w-6 h-6 text-purple-400" /> : <Video className="w-6 h-6 text-green-400" />}
-            </div>
-            <CardTitle className="text-2xl font-bold text-white">
-              {activeTab === "youtube" ? "Transcribe & Analyze YouTube" : activeTab === "text" ? "Analyze Raw Document Text" : activeTab === "audio" ? "Analyze Audio Files Offline" : "Record Live Conversation"}
-            </CardTitle>
-            <CardDescription className="text-gray-400">
-              {activeTab === "youtube"
-                ? "Enter a YouTube video link to transcribe and extract insights."
-                : activeTab === "text"
-                  ? "Paste any large text block, document, or review for direct AI analysis."
-                  : activeTab === "audio" 
-                    ? "Upload an MP3, WAV, or M4A file to transcribe privately with Whisper."
-                    : "Use your microphone to record a meeting or voice note and analyze it offline."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={activeTab === "youtube" ? handleSubmit : activeTab === "text" ? handleTextSubmit : handleAudioSubmit} className="space-y-4">
-              {activeTab === "youtube" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="youtube-link" className="text-gray-300">YouTube Link</Label>
-                  <Input
-                    id="youtube-link"
-                    type="text"
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    value={youtubeUrl}
-                    onChange={(e) => setYoutubeUrl(e.target.value)}
-                    className="w-full bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
-                    disabled={isLoading}
-                  />
-                </div>
-              ) : activeTab === "text" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="raw-text" className="text-gray-300">Paste Text Content</Label>
-                  <textarea
-                    id="raw-text"
-                    placeholder="E.g. Paste legal clauses, Amazon reviews, HR policies, or long news articles here..."
-                    value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
-                    className="w-full min-h-[160px] flex rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm shadow-sm placeholder:text-gray-500 text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isLoading}
-                  />
-                </div>
-              ) : activeTab === "audio" ? (
-                <div className="space-y-2">
-                  <Label htmlFor="audio-file" className="text-gray-300">Upload Local Audio</Label>
-                  <Input
-                    id="audio-file"
-                    type="file"
-                    accept="audio/*"
-                    onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                    className="w-full bg-gray-800 border-gray-700 text-white"
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1 pl-1">Uses OpenAI Whisper (offline). Supports .mp3, .wav, .m4a</p>
-                </div>
-              ) : (
-                <div className="space-y-4 flex flex-col items-center py-6 bg-gray-950 rounded-lg border border-gray-800">
-                  <Label className="text-gray-300 font-semibold mb-2">Live Microphone Recording</Label>
-                  <div className="flex gap-4 items-center justify-center">
-                    {!isRecording ? (
-                      <Button type="button" onClick={startRecording} className="bg-red-600 hover:bg-red-700 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg transition-transform hover:scale-105">
-                        <Mic className="w-10 h-10" />
-                      </Button>
-                    ) : (
-                      <Button type="button" onClick={stopRecording} className="bg-gray-900 border-red-500 border-2 hover:bg-gray-800 text-white rounded-full w-20 h-20 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse">
-                        <div className="w-8 h-8 bg-red-500 rounded-sm" />
-                      </Button>
-                    )}
-                  </div>
-                  {isRecording && (
-                    <div className="text-red-400 font-mono text-3xl font-bold font-tabular-nums mt-4">
-                      {Math.floor(recordingTime / 60).toString().padStart(2, '0')}:{(recordingTime % 60).toString().padStart(2, '0')}
-                    </div>
-                  )}
-                  {audioFile && !isRecording && (
-                    <div className="text-green-400 text-sm mt-4 text-center bg-gray-800 px-4 py-2 rounded-full border border-gray-700">
-                      ✅ Audio ready ({Math.round(audioFile.size / 1024)} KB). Click Transcribe!
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {message && (
-                <Alert
-                  className={
-                    message.type === "success"
-                      ? "border-green-800 bg-green-950 text-green-200"
-                      : "border-red-800 bg-red-950 text-red-200"
-                  }
-                >
-                  {message.type === "success" ? (
-                    <CheckCircle className="h-4 w-4 text-green-400" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4 text-red-500" />
-                  )}
-                  <AlertDescription>
-                    {message.text}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <Button
-                type="submit"
-                className={`w-full ${activeTab === "youtube" ? "bg-red-700 hover:bg-red-800 text-white" : activeTab === "text" ? "bg-blue-700 hover:bg-blue-800 text-white" : activeTab === "audio" ? "bg-purple-700 hover:bg-purple-800 text-white" : "bg-green-700 hover:bg-green-800 text-white"}`}
-                disabled={isLoading || (activeTab === "recording" && (!audioFile || isRecording))}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {message?.text.includes("Transcribing") ? "Transcribing..." : "Analyzing..."}
-                  </>
-                ) : (
-                  activeTab === "youtube" ? "Transcribe & Analyze" : activeTab === "text" ? "Analyze Text" : "Transcribe & Analyze Audio"
-                )}
+          <div className="flex items-center justify-end">
+            <Link href="/login">
+              <Button className="relative overflow-hidden bg-gradient-to-r from-accent-600 via-fuchsia-600 to-cyan-600 hover:from-accent-500 hover:via-fuchsia-500 hover:to-cyan-500 text-white border border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(34,211,238,0.5)] font-mono tracking-widest rounded px-8 uppercase text-xs h-10 transition-all duration-300 hover:scale-[1.02] group">
+                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <span className="relative z-10 font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">Acceder</span>
               </Button>
+            </Link>
+          </div>
+        </div>
+      </nav>
 
-              <div className="mt-4 pt-4 border-t border-gray-800">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 font-semibold"
-                  onClick={handleDownloadPDF}
-                  disabled={!response || isLoading}
-                >
-                  <FileText className="mr-2 h-5 w-5" />
-                  Exportar a PDF Premium
-                  {!response && !isLoading && <span className="ml-2 text-xs opacity-75">(Run analysis first)</span>}
+      {/* Hero Section */}
+      <div className="relative overflow-hidden pt-24 pb-32">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] opacity-20 pointer-events-none">
+          <div className="absolute inset-0 bg-accent-500 blur-[150px] rounded-full transform scale-150 -translate-y-1/2"></div>
+          <div className="absolute inset-0 bg-cyan-500/30 blur-[120px] rounded-full transform translate-x-1/4 -translate-y-1/4"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-4xl mx-auto space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-accent-500/50 bg-drcv-600/80 text-xs text-accent-400 font-mono tracking-widest uppercase shadow-[0_0_15px_rgba(168,85,247,0.2)] backdrop-blur-md">
+              <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_10px_#22d3ee]" />
+              Pipeline Analítico Offline Activo
+            </div>
+
+            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-400 drop-shadow-sm">
+                Inteligencia Corporativa
+              </span>
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 via-fuchsia-400 to-cyan-400 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]">
+                100% Fuera de la Nube.
+              </span>
+            </h1>
+
+            <p className="text-xl text-accent-100/80 max-w-3xl mx-auto leading-relaxed font-light">
+              Transforma reuniones enteras, contratos legales masivos y miles de reviews en decisiones estratégicas al instante. Extrae la esencia de tu industria desde hardware corporativo con <strong className="text-cyan-400 font-semibold drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">privacidad absoluta</strong>. Dile adiós a la "sequía de tokens": inteligencia artificial estratégicamente ilimitada, sin cuotas y libre de facturas sorpresa.
+            </p>
+
+            <div className="flex justify-center items-center pt-8">
+              <Link href="/login">
+                <Button className="relative overflow-hidden h-14 px-12 bg-gradient-to-r from-accent-600 via-fuchsia-600 to-cyan-600 hover:from-accent-500 hover:via-fuchsia-500 hover:to-cyan-500 text-white rounded text-sm font-mono tracking-widest uppercase shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_50px_rgba(34,211,238,0.6)] border border-white/10 transition-all duration-300 hover:scale-105 group">
+                  <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                  <span className="relative z-10 flex items-center font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                    Acceder
+                    <ArrowRight className="w-5 h-5 ml-3 group-hover:translate-x-1.5 transition-transform text-white drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                  </span>
                 </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {isLoading && (
-          <Card className="w-full bg-gray-900 border-gray-800">
-            <CardContent className="p-8">
-              <div className="flex flex-col items-center justify-center space-y-4">
-                <div className="relative">
-                  <div className={`w-16 h-16 border-4 rounded-full animate-pulse ${activeTab === "youtube" ? "border-red-900" : activeTab === "text" ? "border-blue-900" : activeTab === "audio" ? "border-purple-900" : "border-green-900"}`}></div>
-                  <div className={`absolute top-0 left-0 w-16 h-16 border-4 border-t-transparent rounded-full animate-spin ${activeTab === "youtube" ? "border-red-400" : activeTab === "text" ? "border-blue-400" : activeTab === "audio" ? "border-purple-400" : "border-green-400"}`}></div>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-medium text-gray-300">
-                    {message?.text.includes("Transcribing")
-                      ? "Transcribing source..."
-                      : "Analyzing payload..."}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {message?.text.includes("Transcribing")
-                      ? "Please wait while we extract the text."
-                      : "Processing with local AI (Agent)..."}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {response && !isLoading && (
-          <Card className="w-full bg-gray-900 border-gray-800 animate-in slide-in-from-bottom-4 duration-500">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2 text-white">
-                <CheckCircle className="h-5 w-5 text-green-400" />
-                <span>Analysis Result</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {response.analyzedFile && (
-                  <div className="flex gap-4">
-                    <div className="bg-gray-800 rounded-lg p-3 flex-1 overflow-hidden border border-gray-700">
-                      <h5 className="font-medium text-gray-400 mb-1 text-xs uppercase tracking-wider">Source</h5>
-                      <p className="text-gray-300 font-mono text-sm truncate">{response.analyzedFile}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-green-900 rounded-lg p-4 border border-green-800">
-                  <h5 className="font-bold text-green-400 mb-2 flex items-center gap-2">
-                    <FileText className="w-4 h-4" /> Resumen Ejecutivo
-                  </h5>
-                  <p className="text-green-100 text-sm leading-relaxed">{response.summary}</p>
-                </div>
-
-                <div className="bg-blue-900 rounded-lg p-4 border border-blue-800">
-                  <h5 className="font-bold text-blue-400 mb-2 flex items-center gap-2">
-                    <Sun className="w-4 h-4" /> Idea Central
-                  </h5>
-                  <p className="text-blue-100 text-sm leading-relaxed font-medium">
-                    {response.coreIdea}
-                  </p>
-                </div>
-
-                <div className="bg-amber-900 rounded-lg p-4 border border-amber-800">
-                  <h5 className="font-bold text-amber-400 mb-2 flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4" /> Análisis de Pros y Contras
-                  </h5>
-                  <div className="text-amber-100 text-sm whitespace-pre-wrap overflow-x-auto font-sans leading-relaxed">
-                    {response.prosCons}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* El Verdadero Potencial Comercial */}
+      <div className="py-24 relative z-10 border-t border-accent-500/20 bg-drcv-900/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-white to-accent-200">El Límite es tu Imaginación (Casos Críticos)</h2>
+          <p className="text-accent-300/70 max-w-2xl mx-auto font-mono text-sm tracking-widest uppercase mb-16 shadow-accent-500">Pipeline de Procesamiento Analítico Natural (NLP)</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+
+            <div className="p-8 bg-drcv-600 border border-accent-500/20 rounded-xl shadow-[0_0_30px_rgba(168,85,247,0.05)] hover:border-cyan-400/50 hover:shadow-[0_0_40px_rgba(34,211,238,0.15)] transition-all group">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-drcv-primary rounded-lg border border-accent-500/30 group-hover:border-cyan-400/50">
+                  <Briefcase className="w-8 h-8 text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" />
+                </div>
+                <h4 className="text-2xl font-bold text-accent-100">1. Analítica de Reuniones y Ventas</h4>
+              </div>
+              <div className="space-y-4">
+                <p className="text-neutral-300 leading-relaxed text-sm">
+                  <strong className="text-white">Imagina conectar este motor a audios de la mesa directiva.</strong> <br />
+                  El sistema analiza horas de metraje y escupe: Resumen Ejecutivo, Acuerdos Clave (Next Steps) y los responsables de cada tarea. Todo exportado a un PDF membretado.
+                </p>
+                <p className="text-accent-400 font-mono text-xs uppercase tracking-wider bg-accent-500/10 p-3 rounded border border-accent-500/20">
+                  🚀 Valor Comercial: Ahorra horas semanales a ejecutivos C-Level redactando minutas confidenciales.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-8 bg-drcv-600 border border-accent-500/20 rounded-xl shadow-[0_0_30px_rgba(168,85,247,0.05)] hover:border-fuchsia-400/50 hover:shadow-[0_0_40px_rgba(232,121,249,0.15)] transition-all group">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-drcv-primary rounded-lg border border-accent-500/30 group-hover:border-fuchsia-400/50">
+                  <Headphones className="w-8 h-8 text-fuchsia-400 drop-shadow-[0_0_8px_rgba(232,121,249,0.8)]" />
+                </div>
+                <h4 className="text-2xl font-bold text-accent-100">2. Customer Support Monitoring</h4>
+              </div>
+              <div className="space-y-4">
+                <p className="text-neutral-300 leading-relaxed text-sm">
+                  <strong className="text-white">Alimenta el modelo con horas de Call Center.</strong> <br />
+                  Cambia el prompt base y obliga a The Vault AI a calificar al agente (1-10) detectando el nivel exacto de frustración del cliente en la conversación.
+                </p>
+                <p className="text-fuchsia-400 font-mono text-xs uppercase tracking-wider bg-fuchsia-500/10 p-3 rounded border border-fuchsia-500/20">
+                  🚀 Reporte Diario: "Tuvimos 30 llamadas furiosas, pero Juan Pérez calmó a 25. Retención asegurada."
+                </p>
+              </div>
+            </div>
+
+            <div className="p-8 bg-drcv-600 border border-accent-500/20 rounded-xl shadow-[0_0_30px_rgba(168,85,247,0.05)] hover:border-accent-400/50 hover:shadow-[0_0_40px_rgba(168,85,247,0.15)] transition-all group">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-drcv-primary rounded-lg border border-accent-500/30 group-hover:border-accent-400/50">
+                  <Database className="w-8 h-8 text-accent-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
+                </div>
+                <h4 className="text-2xl font-bold text-accent-100">3. Inteligencia E-commerce</h4>
+              </div>
+              <div className="space-y-4">
+                <p className="text-neutral-300 leading-relaxed text-sm">
+                  <strong className="text-white">Procesa miles de reviews rascados de Amazon.</strong> <br />
+                  El modelo deglute las críticas de la competencia y vomita los "Top 3 dolores de cabeza del usuario" para capitalizarlos comercialmente de forma masiva.
+                </p>
+                <p className="text-accent-400 font-mono text-xs uppercase tracking-wider bg-accent-500/10 p-3 rounded border border-accent-500/20">
+                  🚀 Valor Estratégico: Lanzar productos letalmente precisos aprovechando las debilidades del líder de mercado.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-8 bg-drcv-600 border border-accent-500/20 rounded-xl shadow-[0_0_30px_rgba(168,85,247,0.05)] hover:border-emerald-400/50 hover:shadow-[0_0_40px_rgba(52,211,153,0.15)] transition-all group">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-drcv-primary rounded-lg border border-accent-500/30 group-hover:border-emerald-400/50">
+                  <FileText className="w-8 h-8 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                </div>
+                <h4 className="text-2xl font-bold text-accent-100">4. Gestor LegalTech Masivo</h4>
+              </div>
+              <div className="space-y-4">
+                <p className="text-neutral-300 leading-relaxed text-sm">
+                  <strong className="text-white">Auditorías legales en instantes.</strong> <br />
+                  Una IA que devora contratos de 50 páginas en 3 segundos, detectando si falta alguna cláusula obligatoria u Obligación Contractual Clave.
+                </p>
+                <p className="text-emerald-400 font-mono text-xs uppercase tracking-wider bg-emerald-500/10 p-3 rounded border border-emerald-500/20">
+                  🚀 Ingreso Recurrente: Notarías y Despachos pagarán fortunas por ahorrar 4 horas de lectura minuciosa por archivo.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      {/* El Futuro: De Analizador a Cerebro Central */}
+      <div className="py-32 relative z-10 border-y border-transparent bg-transparent overflow-hidden">
+        <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-fuchsia-500/20 to-transparent -z-10"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(232,121,249,0.04)_0%,transparent_70%)] pointer-events-none -z-10"></div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white via-fuchsia-100 to-fuchsia-300 drop-shadow-sm tracking-tight">🚀 El Futuro: De Analizador a Cerebro Central</h2>
+          <h3 className="text-fuchsia-400 font-mono text-sm md:text-base tracking-widest uppercase mb-10 drop-shadow-[0_0_8px_rgba(232,121,249,0.5)]">El Activo más Valioso: Tu Memoria Corporativa</h3>
+          <p className="text-neutral-300 leading-relaxed text-xl max-w-3xl mx-auto font-light">
+            Al implementar The Vault hoy, estás iniciando la fase de <strong className="text-white font-semibold">Recolección Inteligente</strong>. En el futuro cercano, habilitaremos el módulo de Memoria Corporativa (RAG): tu IA dejará de analizar archivos aislados para <strong className="text-cyan-300 font-semibold">'recordar' cada contrato, cada llamada y cada decisión histórica</strong>, convirtiéndose en el consultor experto definitivo que conoce toda la trayectoria de tu negocio.
+          </p>
+        </div>
+      </div>
+
+      {/* Los Tres Pilares de Poder Técnico */}
+      <div className="bg-drcv-primary border-y border-transparent py-24 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-white mb-4 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">La Bóveda En Acción</h2>
+            <p className="text-accent-300/60 max-w-2xl mx-auto font-mono text-sm tracking-wide uppercase">Capacidades de Inferencia Nativas</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-drcv-600 p-8 rounded border border-accent-500/30 shadow-2xl hover:border-cyan-400/80 transition-colors">
+              <div className="w-12 h-12 bg-drcv-primary rounded flex items-center justify-center border border-accent-500/20 mb-6 group-hover:scale-110 transition-transform">
+                <Ear className="w-6 h-6 text-cyan-400" />
+              </div>
+              <h3 className="text-lg font-bold text-accent-100 mb-3">Oídos Privados</h3>
+              <p className="text-neutral-400 leading-relaxed text-sm">
+                Sube el audio de tus reuniones y obtén minutas automáticas. Privacidad total: la estrategia de ventas nunca sale de la empresa.
+              </p>
+            </div>
+
+            <div className="bg-drcv-600 p-8 rounded border border-accent-500/30 shadow-2xl hover:border-fuchsia-400/80 transition-colors">
+              <div className="w-12 h-12 bg-drcv-primary rounded flex items-center justify-center border border-accent-500/20 mb-6 group-hover:scale-110 transition-transform">
+                <Eye className="w-6 h-6 text-fuchsia-400" />
+              </div>
+              <h3 className="text-lg font-bold text-accent-100 mb-3">Visión Analítica</h3>
+              <p className="text-neutral-400 leading-relaxed text-sm">
+                Carga documentos gigantes. Detecta riesgos o anomalías invisibles sin que competidores o nubes públicas logren registrar lo que estás leyendo.
+              </p>
+            </div>
+
+            <div className="bg-drcv-600 p-8 rounded border border-accent-500/30 shadow-2xl hover:border-accent-400/80 transition-all duration-300 group">
+              <div className="w-12 h-12 bg-drcv-primary rounded flex items-center justify-center border border-accent-500/20 mb-6 group-hover:scale-110 group-hover:border-accent-400/50 transition-all duration-300">
+                <Cpu className="w-6 h-6 text-accent-400 group-hover:drop-shadow-[0_0_8px_rgba(168,85,247,0.8)] transition-all" />
+              </div>
+              <h3 className="text-lg font-bold text-accent-100 mb-3">Crecimiento Evolutivo</h3>
+              <p className="text-neutral-400 leading-relaxed text-sm">
+                The Vault no es un software estático. Nuestra arquitectura está diseñada para evolucionar: hoy procesas datos con Qwen 2.5; mañana, actualizamos el motor a Llama 3 o modelos superiores sin cambiar tu infraestructura. Tu inversión está <strong className="text-white">protegida y lista para la próxima generación.</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* El "Factor Seguridad" & Comparative */}
+      <div className="py-24 relative z-10 border-t border-accent-500/20 bg-drcv-600/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          <div className="bg-drcv-900 rounded-xl border border-cyan-500/30 shadow-[0_0_80px_rgba(34,211,238,0.1)] p-8 md:p-16 mb-16 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-cyan-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2"></div>
+
+            <div className="max-w-3xl relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <ShieldCheck className="w-10 h-10 text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.6)]" />
+                <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200">Soberanía de Datos Real</h2>
+              </div>
+              <p className="text-xl text-neutral-300 leading-relaxed mb-6">
+                Mientras otros regalan su Propiedad Intelectual a plataformas como OpenAI, con The Vault AI mantienes el control de la llave.
+              </p>
+              <p className="text-lg text-neutral-400 leading-relaxed">
+                Los datos financieros, llamadas de clientes y rutas legales de tu negocio <strong className="text-cyan-400 font-semibold drop-shadow-[0_0_5px_rgba(34,211,238,0.5)]">tienen literalmente prohibido viajar al exterior de internet.</strong> Lo que pasa en tu oficina, se procesa en tu caja fuerte.
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto">
+            <h3 className="text-2xl font-bold text-center text-white mb-8 drop-shadow-[0_0_5px_rgba(168,85,247,0.5)]">Tu Sistema vs IA Tradicional en la Nube</h3>
+            <div className="overflow-x-auto rounded border border-accent-500/40 shadow-[0_0_30px_rgba(168,85,247,0.1)]">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-drcv-primary border-b border-accent-500/40">
+                    <th className="py-4 px-6 font-mono text-xs text-neutral-500 uppercase tracking-widest">Métrica</th>
+                    <th className="py-4 px-6 font-mono text-xs text-neutral-500 uppercase tracking-widest">Nube (OpenAI / Azure)</th>
+                    <th className="py-4 px-6 font-mono text-xs text-accent-400 uppercase tracking-widest bg-accent-500/10 border-l border-accent-500/30">The Vault (Monstruo Local)</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-drcv-600">
+                  <tr className="border-b border-accent-500/10 hover:bg-drcv-500/50">
+                    <td className="py-4 px-6 text-sm font-bold text-accent-100">Privacidad de Información</td>
+                    <td className="py-4 px-6 text-sm text-neutral-400">Datos interceptables / Alimentan modelos externos.</td>
+                    <td className="py-4 px-6 text-sm text-cyan-300 bg-accent-500/10 font-medium border-l border-accent-500/30 shadow-[inset_10px_0_20px_rgba(34,211,238,0.05)] transition-colors hover:bg-cyan-500/10 hover:shadow-[inset_15px_0_30px_rgba(34,211,238,0.1)]">100% On-Premise. Aislamiento absoluto.</td>
+                  </tr>
+                  <tr className="border-b border-accent-500/10 hover:bg-drcv-500/50">
+                    <td className="py-4 px-6 text-sm font-bold text-accent-100">Costo Operacional (Tokens)</td>
+                    <td className="py-4 px-6 text-sm text-neutral-400">Sequía de tokens constante. Estás limitado; a mayor uso de la IA, mayor es tu factura.</td>
+                    <td className="py-4 px-6 text-sm text-cyan-300 bg-accent-500/10 font-medium border-l border-accent-500/30 shadow-[inset_10px_0_20px_rgba(34,211,238,0.05)] transition-colors hover:bg-cyan-500/10 hover:shadow-[inset_15px_0_30px_rgba(34,211,238,0.1)]">¡Adiós sequía de tokens! Procesamiento ilimitado 24/7. Costo por inferencia = CERO.</td>
+                  </tr>
+                  <tr className="border-b border-accent-500/10 hover:bg-drcv-500/50">
+                    <td className="py-4 px-6 text-sm font-bold text-accent-100">Evolución</td>
+                    <td className="py-4 px-6 text-sm text-neutral-400">Dependes de las actualizaciones de terceros.</td>
+                    <td className="py-4 px-6 text-sm text-fuchsia-300 bg-fuchsia-500/10 font-medium border-l border-fuchsia-500/30 shadow-[inset_10px_0_20px_rgba(232,121,249,0.05)] transition-colors hover:bg-fuchsia-500/10 hover:shadow-[inset_15px_0_30px_rgba(232,121,249,0.1)]">Tú decides cuándo y cómo evoluciona tu IA.</td>
+                  </tr>
+                  <tr className="border-b border-accent-500/10 hover:bg-drcv-500/50">
+                    <td className="py-4 px-6 text-sm font-bold text-accent-100">Aprendizaje</td>
+                    <td className="py-4 px-6 text-sm text-neutral-400">Tu conocimiento ayuda a mejorar IAs ajenas.</td>
+                    <td className="py-4 px-6 text-sm text-emerald-300 bg-emerald-500/10 font-medium border-l border-emerald-500/30 shadow-[inset_10px_0_20px_rgba(52,211,153,0.05)] transition-colors hover:bg-emerald-500/10 hover:shadow-[inset_15px_0_30px_rgba(52,211,153,0.1)]">Tu conocimiento se queda en casa para tu beneficio.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="py-12 relative z-10 bg-drcv-primary border-t border-accent-500/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center flex flex-col items-center">
+          <div className="flex items-center gap-2 mb-6">
+            <Image src="/logosinfondo.png" alt="DRCV Company" width={120} height={35} className="object-contain drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+            <span className="text-xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-accent-400 to-cyan-400 ml-2">AISUITE</span>
+          </div>
+          <p className="text-accent-500/50 text-xs font-mono tracking-widest uppercase">
+            © {new Date().getFullYear()} ECOSISTEMA B2B DESCONECTADO. PRIVACIDAD BLINDADA.
+          </p>
+        </div>
+      </footer>
     </div>
-  )
+  );
 }
