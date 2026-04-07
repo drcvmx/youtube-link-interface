@@ -296,7 +296,7 @@ export default function YouTubeLinkSubmission() {
       <div className="w-full max-w-4xl space-y-6 relative z-10 pt-4">
         
         {/* Superior Toolbar */}
-        <div className="flex justify-between items-center w-full bg-drcv-600 border border-drcv-500 rounded-lg p-4 shadow-lg">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 sm:gap-0 w-full bg-drcv-600 border border-drcv-500 rounded-lg p-4 shadow-lg">
           <div className="flex items-center gap-4">
              <Image src="/logosinfondo.png" alt="DRCV Company" width={130} height={42} className="object-contain drop-shadow-md" priority />
              <div className="h-8 w-px bg-drcv-500 mx-2"></div>
@@ -308,7 +308,7 @@ export default function YouTubeLinkSubmission() {
                </div>
              </div>
           </div>
-          <Button variant="ghost" onClick={handleLogout} className="text-neutral-400 hover:text-white hover:bg-drcv-primary font-mono text-xs uppercase tracking-wider">
+          <Button variant="ghost" onClick={handleLogout} className="w-full sm:w-auto text-neutral-400 hover:text-white hover:bg-drcv-primary font-mono text-xs uppercase tracking-wider">
             <LogOut className="w-4 h-4 mr-2" /> Cerrar Conexión
           </Button>
         </div>
