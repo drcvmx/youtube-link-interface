@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 // Constantes
 const OLLAMA_URL = process.env.OLLAMA_URL || "http://127.0.0.1:11434/api/generate";
-const MODEL_NAME = process.env.MODEL_NAME || "qwen2.5:1.5b";
+const MODEL_NAME = process.env.MODEL_NAME || "llama3";
 
 const getPromptTemplates = (sourceType: string) => {
   const context = sourceType === "audio" 
@@ -11,35 +11,39 @@ const getPromptTemplates = (sourceType: string) => {
 
   return {
     summary: `
-Eres un asistente experto en resumir.
-Resume ${context} en exactamente 2 oraciones concisas en ESPAÑOL.
-Enfócate solo en la conclusión general y mantén un tono neutral.
+Eres un asistente experto en análisis estratégico y síntesis de información.
+Tu objetivo es proporcionar un RESUMEN EJECUTIVO detallado y profesional de ${context}.
+Divide el resumen en 2 o 3 párrafos claros que cubran:
+1. El propósito o tema principal.
+2. Los puntos clave o argumentos desarrollados.
+3. La conclusión o implicación final.
+Mantén un tono formal, analítico y en ESPAÑOL.
 Texto:
 '{text}'
-Resumen: `,
+Resumen Ejecutivo: `,
     core_idea: `
-Eres un experto analista.
-Extrae exactamente la IDEA CENTRAL (el mensaje o tesis principal) de ${context} en ESPAÑOL.
-Responde con solo 1 oración potente y directa. No agregues saludos.
+Eres un estratega analista de alto nivel.
+Después de procesar profundamente ${context}, identifica y explica la IDEA CENTRAL (el "core mission" o tesis fundamental).
+No te limites a una frase corta; desarrolla la explicación en un párrafo potente y directo que capture la esencia real de la información en ESPAÑOL.
 Texto:
 '{text}'
 Idea Central: `,
     pros_cons: `
-Eres un asistente experto evaluador.
-Basado estrictamente en ${context}, enumera exhaustivamente los PUNTOS POSITIVOS (Pros) y los PUNTOS NEGATIVOS (Contras) mencionados.
-Responde en ESPAÑOL siguiendo este formato estricto:
+Eres un evaluador crítico y exhaustivo.
+Analiza ${context} e identifica TODOS los puntos positivos (pros/oportunidades) y negativos (contras/riesgos) mencionados o implícitos.
+Tu análisis debe ser robusto y exhaustivo. Responde en ESPAÑOL siguiendo este formato:
 
-PROS:
-- (punto 1)
-- (punto 2)
+PROS Y OPORTUNIDADES:
+- [Punto 1]: Explicación detallada del beneficio.
+- [Punto 2]: Explicación detallada del beneficio.
 
-CONTRAS:
-- (punto 1)
-- (punto 2)
+CONTRAS Y RIESGOS:
+- [Punto 1]: Explicación detallada del riesgo detectado.
+- [Punto 2]: Explicación detallada del riesgo detectado.
 
-No inventes información que no esté en el texto.
+No inventes información que no esté sustentada en el texto.
 Texto: '{text}'
-Análisis: `,
+Análisis Estructurado: `,
   };
 };
 
@@ -49,10 +53,10 @@ async function queryOllama(prompt: string): Promise<string> {
     prompt,
     stream: false,
     options: {
-      temperature: 0.5,
-      repeat_penalty: 1.2,
-      num_ctx: 2048,
-      num_thread: 4,
+      temperature: 0.7,
+      repeat_penalty: 1.1,
+      num_ctx: 8192,
+      num_thread: 6,
     },
   };
 
@@ -78,7 +82,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No se proporcionó texto para analizar" }, { status: 400 });
     }
 
-    const maxText = text.slice(0, 3000); 
+    // Aumentamos el límite de caracteres para procesar más contexto del archivo original
+    const maxText = text.slice(0, 12000); 
     const prompts = getPromptTemplates(sourceType);
 
     const summary = await queryOllama(prompts.summary.replace("{text}", maxText));
