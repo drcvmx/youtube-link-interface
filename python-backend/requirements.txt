@@ -2,4 +2,5 @@ Flask
 Flask-Cors
 youtube-transcript-api
 weasyprint
-openai-whisper 
+openai-whisper
+liteparse

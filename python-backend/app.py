@@ -18,6 +18,11 @@ try:
 except ImportError:
     whisper_model = None
 
+try:
+    from liteparse import LiteParse
+except ImportError:
+    LiteParse = None
+
 app = Flask(__name__)
 CORS(app)
 
@@ -100,6 +105,43 @@ def transcribir():
         traceback.print_exc()
         return jsonify({"error": f"No se pudo obtener la transcripción: {str(e)}"}), 500
 
+
+@app.route("/parsear-documento", methods=["POST"])
+def parsear_documento():
+    if LiteParse is None:
+        return jsonify({"error": "LiteParse no está instalado. Ejecuta 'pip install liteparse'"}), 500
+
+    if "file" not in request.files:
+        return jsonify({"error": "No se encontró el archivo en la solicitud."}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "Nombre de archivo vacío."}), 400
+
+    temp_path = None
+    try:
+        ext = os.path.splitext(file.filename)[1]
+        temp_fd, temp_path = tempfile.mkstemp(suffix=ext)
+        os.close(temp_fd)
+        file.save(temp_path)
+
+        parser = LiteParse()
+        result = parser.parse(temp_path)
+        
+        texto_extraido = "\n\n".join(page.text for page in result.pages if page.text)
+        
+        return jsonify({
+            "text": texto_extraido,
+            "success": True
+        }), 200
+    except Exception as e:
+        print(f"Error parseando documento: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Error al extraer texto: {str(e)}"}), 500
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            os.remove(temp_path)
 
 @app.route("/exportar-pdf", methods=["POST"])
 def exportar_pdf():

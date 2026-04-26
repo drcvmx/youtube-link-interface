@@ -19,7 +19,7 @@ interface Message {
 export default function YouTubeLinkSubmission() {
   const [activeTab, setActiveTab] = useState<"youtube" | "text" | "audio" | "recording">("youtube")
   const [youtubeUrl, setYoutubeUrl] = useState('')
-  const [rawText, setRawText] = useState('')
+  const [docFile, setDocFile] = useState<File | null>(null)
   const [audioFile, setAudioFile] = useState<File | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<Message | null>(null)
@@ -158,11 +158,11 @@ export default function YouTubeLinkSubmission() {
     }
   }
 
-  const handleTextSubmit = async (e: React.FormEvent) => {
+  const handleDocSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!rawText.trim()) {
-      setMessage({ type: "error", text: "ERR_NO_INPUT: Inserte vector de texto." });
+    if (!docFile) {
+      setMessage({ type: "error", text: "ERR_NO_FILE: Cargue archivo de documento." });
       return;
     }
 
@@ -171,20 +171,39 @@ export default function YouTubeLinkSubmission() {
     setResponse(null)
 
     try {
-      setMessage({ type: "success", text: "INIT_TEXT_ANALYSIS: Evaluando sintaxis local..." });
+      setMessage({ type: "success", text: "INIT_DOCUMENT_PARSE: Desplegando motor LiteParse..." });
+      
+      const formData = new FormData();
+      formData.append("file", docFile);
+
+      const pythonApiUrl = `${process.env.NEXT_PUBLIC_PYTHON_API_URL || 'http://127.0.0.1:5000'}/parsear-documento`;
+      const pythonApiResponse = await fetch(pythonApiUrl, {
+        method: "POST",
+        body: formData,
+      });
+
+      const pythonData = await pythonApiResponse.json();
+
+      if (!pythonApiResponse.ok) {
+        setMessage({ type: "error", text: pythonData.error || "ERR_PARSING_FAILED" });
+        return;
+      }
+
+      setMessage({ type: "success", text: "TEXT_AQUIRED: Evaluando sintaxis local en GPU..." });
 
       const nextApiUrl = "/api/analyze-text";
       const nextApiResponse = await fetch(nextApiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: rawText, sourceType: "text" }),
+        body: JSON.stringify({ text: pythonData.text, sourceType: "document" }),
       });
 
       const nextData = await nextApiResponse.json();
 
       if (nextApiResponse.ok) {
         setMessage({ type: "success", text: "OP_SUCCESS: Análisis Táctico Completado." });
-        await saveAnalysisToDb('text', rawText.substring(0, 50), nextData);
+        nextData.analyzedFile = `DOC_TARGET: ${docFile.name}`;
+        await saveAnalysisToDb('document', docFile.name, nextData);
         setResponse(nextData);
       } else {
         setMessage({ type: "error", text: nextData.error || "ERR_ANALYSIS_FAILED" });
@@ -318,7 +337,7 @@ export default function YouTubeLinkSubmission() {
           <div className="flex w-full text-xs font-mono tracking-wider uppercase">
             {[
               { id: "youtube", icon: Youtube, label: "Red / YouTube", activeClass: "bg-drcv-600 text-red-400 shadow-[0_0_15px_rgba(248,113,113,0.15)] border border-red-500/30", iconClass: "text-red-500" },
-              { id: "text", icon: FileText, label: "Texto Raw", activeClass: "bg-drcv-600 text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.15)] border border-blue-500/30", iconClass: "text-blue-500" },
+              { id: "text", icon: FileText, label: "Documento", activeClass: "bg-drcv-600 text-blue-400 shadow-[0_0_15px_rgba(96,165,250,0.15)] border border-blue-500/30", iconClass: "text-blue-500" },
               { id: "audio", icon: Mic, label: "Feed Local", activeClass: "bg-drcv-600 text-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.15)] border border-emerald-500/30", iconClass: "text-emerald-500" },
               { id: "recording", icon: Video, label: "Grabar Misión", activeClass: "bg-drcv-600 text-green-400 shadow-[0_0_15px_rgba(34,197,94,0.15)] border border-green-500/30", iconClass: "text-green-500" },
             ].map((tab) => {
@@ -349,15 +368,15 @@ export default function YouTubeLinkSubmission() {
               <Terminal className="w-5 h-5 text-accent-500" />
             </div>
             <CardTitle className="text-xl font-mono tracking-widest text-white uppercase">
-              {activeTab === "youtube" ? "Módulo de Extracción YouTube" : activeTab === "text" ? "Evaluación de Texto Estático" : activeTab === "audio" ? "Análisis Forense Vector Audial" : "Sistema de Escucha Táctica"}
+              {activeTab === "youtube" ? "Módulo de Extracción YouTube" : activeTab === "text" ? "Evaluación de Documentos" : activeTab === "audio" ? "Análisis Forense Vector Audial" : "Sistema de Escucha Táctica"}
             </CardTitle>
             <CardDescription className="text-neutral-500 font-mono text-xs mt-2 uppercase tracking-wider">
-              {activeTab === "youtube" ? "Ingrese URL perimetral del objetivo." : activeTab === "text" ? "Inyecte contenido plano para análisis cognitivo." : activeTab === "audio" ? "Cargue registro de audio local." : "Inicie grabación ambiental (Microphone Capture)."}
+              {activeTab === "youtube" ? "Ingrese URL perimetral del objetivo." : activeTab === "text" ? "Cargue archivo PDF, DOCX, XLSX para extracción por LiteParse." : activeTab === "audio" ? "Cargue registro de audio local." : "Inicie grabación ambiental (Microphone Capture)."}
             </CardDescription>
           </CardHeader>
           
           <CardContent className="pt-6 px-4 md:px-8">
-            <form onSubmit={activeTab === "youtube" ? handleSubmit : activeTab === "text" ? handleTextSubmit : handleAudioSubmit} className="space-y-6">
+            <form onSubmit={activeTab === "youtube" ? handleSubmit : activeTab === "text" ? handleDocSubmit : handleAudioSubmit} className="space-y-6">
               
               {/* Input Variables */}
               {activeTab === "youtube" ? (
@@ -375,15 +394,16 @@ export default function YouTubeLinkSubmission() {
                 </div>
               ) : activeTab === "text" ? (
                 <div className="space-y-2">
-                  <Label htmlFor="raw-text" className="text-xs text-neutral-400 font-mono tracking-wider uppercase">Buffer de Texto</Label>
-                  <textarea
-                    id="raw-text"
-                    placeholder="Escriba o pegue la información plana..."
-                    value={rawText}
-                    onChange={(e) => setRawText(e.target.value)}
-                    className="w-full min-h-[200px] flex rounded border border-drcv-500 bg-drcv-primary px-4 py-3 text-sm shadow-sm placeholder:text-neutral-600 text-white focus-visible:outline-none focus-visible:border-accent-500 focus-visible:ring-1 focus-visible:ring-accent-500 disabled:cursor-not-allowed disabled:opacity-50 font-mono"
+                  <Label htmlFor="doc-file" className="text-xs text-neutral-400 font-mono tracking-wider uppercase">Archivo Objetivo (PDF/DOCX/TXT)</Label>
+                  <Input
+                    id="doc-file"
+                    type="file"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.md,.csv"
+                    onChange={(e) => setDocFile(e.target.files?.[0] || null)}
+                    className="w-full bg-drcv-primary border-drcv-500 text-neutral-300 font-mono h-12 pt-2 focus-visible:border-accent-500"
                     disabled={isLoading}
                   />
+                  <p className="text-[10px] uppercase text-neutral-500 font-mono mt-1">Soporte local offline. Extracción instantánea.</p>
                 </div>
               ) : activeTab === "audio" ? (
                 <div className="space-y-2">
