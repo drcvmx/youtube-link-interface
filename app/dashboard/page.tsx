@@ -30,6 +30,7 @@ export default function YouTubeLinkSubmission() {
   const [chatInput, setChatInput] = useState('')
   const [isChatLoading, setIsChatLoading] = useState(false)
   const [lastAnalyzedText, setLastAnalyzedText] = useState('')
+  const [isChatOpen, setIsChatOpen] = useState(false)
   const chatEndRef = useRef<HTMLDivElement | null>(null)
   
   // Recording State
@@ -623,84 +624,152 @@ export default function YouTubeLinkSubmission() {
           </Card>
         )}
 
-        {/* Chat UI */}
-        {response && !isLoading && (
-          <Card className={`w-full bg-drcv-900 border ${theme.border} ${theme.shadow} animate-in slide-in-from-bottom-6 duration-700 min-h-[400px] flex flex-col`}>
-             <CardHeader className="bg-black/50 border-b border-drcv-500 py-4 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3 text-white">
-                  <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse`} />
-                  <span className="font-mono text-sm uppercase tracking-widest text-neutral-300">Terminal de Consulta</span>
-                  <span className={`text-[10px] ml-2 px-2 py-0.5 rounded border ${theme.border} ${theme.text} bg-black`}>NIVEL 4</span>
-                </div>
-                <Terminal className="w-4 h-4 text-neutral-500" />
-             </CardHeader>
-             
-             <CardContent className="flex-1 flex flex-col p-0">
-               {/* Messages Area */}
-               <div className="flex-1 p-6 space-y-6 overflow-y-auto max-h-[400px] scrollbar-thin scrollbar-thumb-drcv-500 scrollbar-track-transparent">
-                 {chatMessages.length === 0 ? (
-                   <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
-                     <Terminal className="w-12 h-12 text-neutral-600" />
-                     <p className="text-neutral-400 font-mono text-xs max-w-sm">
-                       El módulo lógico ha indexado el contenido y el resultado del análisis. <br/><br/>
-                       Puedes interrogar al sistema sobre detalles específicos, o solicitar transformaciones del material.
-                     </p>
-                   </div>
-                 ) : (
-                   chatMessages.map((msg, index) => (
-                     <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                       <div className={`max-w-[85%] rounded p-4 font-mono text-sm border shadow-sm break-words
-                         ${msg.role === 'user' 
-                           ? `bg-drcv-600 ${theme.border} text-neutral-200` 
-                           : `${theme.bg} border-transparent text-white bg-opacity-10 backdrop-blur-sm`}`}
-                        >
-                          <div className="flex items-center gap-2 mb-2 opacity-60">
-                             {msg.role === 'user' ? <Activity className="w-3 h-3" /> : <Terminal className="w-3 h-3" />}
-                             <span className="text-[10px] uppercase tracking-wider">{msg.role === 'user' ? 'GUEST_OPERATOR' : 'VAULT_AI'}</span>
-                          </div>
-                          <div className="whitespace-pre-wrap leading-relaxed">
-                            {msg.content}
-                          </div>
-                       </div>
-                     </div>
-                   ))
-                 )}
-                 {isChatLoading && (
-                   <div className="flex justify-start">
-                     <div className={`rounded p-4 font-mono text-sm border border-transparent text-white ${theme.bg} bg-opacity-10 w-32`}>
-                       <div className="flex space-x-2 items-center h-4">
-                         <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse [animation-delay:-0.3s]`}></div>
-                         <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse [animation-delay:-0.15s]`}></div>
-                         <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse`}></div>
-                       </div>
-                     </div>
-                   </div>
-                 )}
-                 <div ref={chatEndRef} />
-               </div>
+        {/* Floating Chat Widget — siempre visible */}
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
 
-               {/* Input Area */}
-               <div className="p-4 bg-drcv-800 border-t border-drcv-500">
-                 <form onSubmit={handleChatSubmit} className="flex gap-2">
-                   <Input
-                     value={chatInput}
-                     onChange={(e) => setChatInput(e.target.value)}
-                     placeholder="Ingresa comando o consulta al sistema..."
-                     className={`flex-1 bg-black border-drcv-500 text-white placeholder-neutral-600 font-mono h-12 focus-visible:ring-1 focus-visible:${theme.ring} focus-visible:border-transparent transition-all`}
-                     disabled={isChatLoading}
-                   />
-                   <Button 
-                     type="submit" 
-                     disabled={isChatLoading || !chatInput.trim()}
-                     className={`h-12 px-6 ${theme.bg} text-white font-mono shadow-lg transition-transform active:scale-95`}
-                   >
-                     {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                   </Button>
-                 </form>
-               </div>
-             </CardContent>
-          </Card>
-        )}
+            {/* Chat Window */}
+            {isChatOpen && (
+              <div
+                className={`w-[370px] sm:w-[420px] bg-[#0a0a0f] border ${theme.border} rounded-2xl shadow-2xl ${theme.shadow} flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300`}
+                style={{ height: '520px' }}
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 bg-black/70 border-b border-drcv-500">
+                  <div className="flex items-center gap-3">
+                    <Image src="/logosinfondo.png" alt="DRCV" width={80} height={26} className="object-contain opacity-90" />
+                    <div className="h-5 w-px bg-drcv-500" />
+                    <div className="flex flex-col">
+                      <span className="font-mono text-[11px] uppercase tracking-widest text-neutral-300 leading-none">Terminal de Consulta</span>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <div className={`w-1.5 h-1.5 ${theme.pulse} rounded-full animate-pulse`} />
+                        <span className={`font-mono text-[9px] uppercase tracking-widest ${theme.text}`}>Contexto Cargado</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsChatOpen(false)}
+                    className="text-neutral-500 hover:text-white transition-colors p-1 rounded hover:bg-drcv-600"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                  </button>
+                </div>
+
+                {/* Messages Area */}
+                <div className="flex-1 p-4 space-y-4 overflow-y-auto">
+                  {/* Sin contexto: instrucciones */}
+                  {!response ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center space-y-4 px-2 pt-4">
+                      <Terminal className="w-9 h-9 text-neutral-700" />
+                      <div className="space-y-1">
+                        <p className="text-neutral-300 font-mono text-[11px] uppercase tracking-widest">Sin contexto activo</p>
+                        <p className="text-neutral-600 font-mono text-[10px] leading-relaxed">
+                          Ejecuta un análisis para activar la consulta.
+                        </p>
+                      </div>
+                      <div className="w-full space-y-1.5 text-[10px] font-mono text-left">
+                        {[
+                          { label: "Red / YouTube", color: "text-red-400 border-red-500/30 bg-red-500/5" },
+                          { label: "Documento · PDF / DOCX", color: "text-blue-400 border-blue-500/30 bg-blue-500/5" },
+                          { label: "Feed Local · Audio", color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/5" },
+                          { label: "Grabar Misión · Mic", color: "text-green-400 border-green-500/30 bg-green-500/5" },
+                        ].map((item) => (
+                          <div key={item.label} className={`flex items-center gap-2 border rounded px-3 py-2 ${item.color}`}>
+                            <span className="opacity-60">▶</span>
+                            <span>{item.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  /* Con contexto, sin mensajes: bienvenida */
+                  ) : chatMessages.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center space-y-3 opacity-40">
+                      <Terminal className="w-10 h-10 text-neutral-600" />
+                      <p className="text-neutral-400 font-mono text-[11px] max-w-[260px] leading-relaxed">
+                        Análisis indexado. Puedes hacer preguntas específicas sobre el contenido procesado.
+                      </p>
+                    </div>
+                  ) : (
+                    chatMessages.map((msg, index) => (
+                      <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-[85%] rounded-xl px-4 py-3 font-mono text-xs break-words leading-relaxed
+                          ${msg.role === 'user'
+                            ? 'bg-drcv-600 border border-drcv-500 text-neutral-200'
+                            : 'bg-black/50 border border-drcv-500/40 text-neutral-300'}`}
+                        >
+                          <div className={`text-[9px] uppercase tracking-widest mb-1.5 ${ msg.role === 'user' ? 'text-neutral-500' : theme.text}`}>
+                            {msg.role === 'user' ? 'OPERADOR' : 'VAULT_AI'}
+                          </div>
+                          <div className="whitespace-pre-wrap">{msg.content}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  {isChatLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-black/50 border border-drcv-500/40 rounded-xl px-4 py-3">
+                        <div className="flex space-x-1.5 items-center">
+                          <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse [animation-delay:-0.3s]`} />
+                          <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse [animation-delay:-0.15s]`} />
+                          <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse`} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Input */}
+                <div className="px-3 pb-3 pt-2 bg-black/40 border-t border-drcv-500/50">
+                  {!response && (
+                    <p className="text-center text-neutral-700 font-mono text-[9px] uppercase tracking-widest mb-2">
+                      Ejecuta un análisis para habilitar
+                    </p>
+                  )}
+                  <form onSubmit={handleChatSubmit} className="flex gap-2">
+                    <Input
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      placeholder={response ? "Consulta al sistema..." : "Sin contexto activo..."}
+                      className={`flex-1 bg-black/60 border-drcv-500 text-white placeholder-neutral-600 font-mono text-xs h-10 focus-visible:ring-1 focus-visible:border-transparent transition-opacity ${!response ? 'opacity-30' : ''}`}
+                      disabled={isChatLoading || !response}
+                    />
+                    <Button
+                      type="submit"
+                      disabled={isChatLoading || !chatInput.trim() || !response}
+                      className={`h-10 px-4 ${theme.bg} text-white transition-transform active:scale-95 ${!response ? 'opacity-30' : ''}`}
+                    >
+                      {isChatLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                    </Button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* Floating Trigger Button */}
+            <button
+              onClick={() => setIsChatOpen(prev => !prev)}
+              className={`relative w-16 h-16 rounded-full border-2 ${theme.border} bg-[#0a0a0f] shadow-2xl ${theme.shadow} flex items-center justify-center hover:scale-110 transition-all duration-200 group`}
+            >
+              <Image
+                src="/logosinfondo.png"
+                alt="Chat DRCV"
+                width={44}
+                height={44}
+                className="object-contain drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
+              />
+              {/* Badge de mensajes sin leer */}
+              {!isChatOpen && chatMessages.length > 0 && (
+                <span className={`absolute -top-1 -right-1 w-5 h-5 ${theme.pulse} rounded-full text-white font-mono text-[10px] font-bold flex items-center justify-center border-2 border-[#0a0a0f]`}>
+                  {chatMessages.filter(m => m.role === 'assistant').length}
+                </span>
+              )}
+              {/* Anillo de pulso when open */}
+              {isChatOpen && (
+                <span className={`absolute inset-0 rounded-full border-2 ${theme.ring} animate-ping opacity-30`} />
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
