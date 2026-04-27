@@ -680,7 +680,6 @@ export default function YouTubeLinkSubmission() {
                         ))}
                       </div>
                     </div>
-                  /* Con contexto, sin mensajes: bienvenida */
                   ) : chatMessages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center space-y-3 opacity-40">
                       <Terminal className="w-10 h-10 text-neutral-600" />
