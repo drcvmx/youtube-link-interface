@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Youtube, CheckCircle, AlertCircle, Sun, FileText, Mic, Video, LogOut, Terminal, Activity } from "lucide-react"
+import { Loader2, Youtube, CheckCircle, AlertCircle, Sun, FileText, Mic, Video, LogOut, Terminal, Activity, Send } from "lucide-react"
 
 interface Message {
   type: "success" | "error";
@@ -24,6 +24,13 @@ export default function YouTubeLinkSubmission() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<Message | null>(null)
   const [response, setResponse] = useState<any>(null)
+  
+  // Chat State
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [isChatLoading, setIsChatLoading] = useState(false)
+  const [lastAnalyzedText, setLastAnalyzedText] = useState('')
+  const chatEndRef = useRef<HTMLDivElement | null>(null)
   
   // Recording State
   const [isRecording, setIsRecording] = useState(false)
@@ -116,6 +123,7 @@ export default function YouTubeLinkSubmission() {
     setIsLoading(true)
     setMessage(null)
     setResponse(null)
+    setChatMessages([])
 
     try {
       setMessage({ type: "success", text: "INIT_URL_DOWNLOAD: Extrayendo metadata..." });
@@ -147,6 +155,7 @@ export default function YouTubeLinkSubmission() {
         setMessage({ type: "success", text: "OP_SUCCESS: Análisis Táctico Completado." });
         await saveAnalysisToDb('youtube', youtubeUrl, nextData);
         nextData.analyzedFile = youtubeUrl; // To show in the UI block
+        setLastAnalyzedText(pythonData.text);
         setResponse(nextData);
       } else {
         setMessage({ type: "error", text: nextData.error || "ERR_ANALYSIS_FAILED" });
@@ -169,6 +178,7 @@ export default function YouTubeLinkSubmission() {
     setIsLoading(true)
     setMessage(null)
     setResponse(null)
+    setChatMessages([])
 
     try {
       setMessage({ type: "success", text: "INIT_DOCUMENT_PARSE: Desplegando motor LiteParse..." });
@@ -204,6 +214,7 @@ export default function YouTubeLinkSubmission() {
         setMessage({ type: "success", text: "OP_SUCCESS: Análisis Táctico Completado." });
         nextData.analyzedFile = `DOC_TARGET: ${docFile.name}`;
         await saveAnalysisToDb('document', docFile.name, nextData);
+        setLastAnalyzedText(pythonData.text);
         setResponse(nextData);
       } else {
         setMessage({ type: "error", text: nextData.error || "ERR_ANALYSIS_FAILED" });
@@ -226,6 +237,7 @@ export default function YouTubeLinkSubmission() {
     setIsLoading(true)
     setMessage(null)
     setResponse(null)
+    setChatMessages([])
 
     try {
       setMessage({ type: "success", text: "INIT_WHISPER: Transcribiendo en GPU local (0 cloud)..." });
@@ -259,6 +271,7 @@ export default function YouTubeLinkSubmission() {
         setMessage({ type: "success", text: "OP_SUCCESS: Análisis Táctico Completado." });
         nextData.analyzedFile = `AUDIO_LOG: ${audioFile.name || 'Microphone_Stream'}`;
         await saveAnalysisToDb(activeTab === 'recording' ? 'recording' : 'audio', audioFile.name || 'Voice Recording', nextData);
+        setLastAnalyzedText(pythonData.text);
         setResponse(nextData);
       } else {
         setMessage({ type: "error", text: nextData.error || "ERR_ANALYSIS_FAILED" });
@@ -306,6 +319,51 @@ export default function YouTubeLinkSubmission() {
       setIsLoading(false);
     }
   };
+
+  const scrollToBottom = () => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [chatMessages])
+
+  const handleChatSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!chatInput.trim() || !response) return
+
+    const userMessage = chatInput.trim()
+    setChatInput("")
+    
+    const newMessages = [...chatMessages, { role: "user" as const, content: userMessage }]
+    setChatMessages(newMessages)
+    setIsChatLoading(true)
+
+    try {
+      const chatApiUrl = "/api/chat";
+      const apiResponse = await fetch(chatApiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages,
+          contextText: lastAnalyzedText,
+          analysis: response
+        }),
+      });
+
+      const data = await apiResponse.json();
+
+      if (apiResponse.ok) {
+        setChatMessages([...newMessages, { role: "assistant" as const, content: data.content }]);
+      } else {
+        setChatMessages([...newMessages, { role: "assistant" as const, content: `ERR_CORE: ${data.error}` }]);
+      }
+    } catch (error: any) {
+      setChatMessages([...newMessages, { role: "assistant" as const, content: `ERR_NETWORK: ${error.message}` }]);
+    } finally {
+      setIsChatLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-drcv-primary flex flex-col items-center p-4 transition-colors duration-300 font-sans relative">
@@ -562,6 +620,85 @@ export default function YouTubeLinkSubmission() {
               </div>
 
             </CardContent>
+          </Card>
+        )}
+
+        {/* Chat UI */}
+        {response && !isLoading && (
+          <Card className={`w-full bg-drcv-900 border ${theme.border} ${theme.shadow} animate-in slide-in-from-bottom-6 duration-700 min-h-[400px] flex flex-col`}>
+             <CardHeader className="bg-black/50 border-b border-drcv-500 py-4 flex flex-row items-center justify-between">
+                <div className="flex items-center gap-3 text-white">
+                  <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse`} />
+                  <span className="font-mono text-sm uppercase tracking-widest text-neutral-300">Terminal de Consulta</span>
+                  <span className={`text-[10px] ml-2 px-2 py-0.5 rounded border ${theme.border} ${theme.text} bg-black`}>NIVEL 4</span>
+                </div>
+                <Terminal className="w-4 h-4 text-neutral-500" />
+             </CardHeader>
+             
+             <CardContent className="flex-1 flex flex-col p-0">
+               {/* Messages Area */}
+               <div className="flex-1 p-6 space-y-6 overflow-y-auto max-h-[400px] scrollbar-thin scrollbar-thumb-drcv-500 scrollbar-track-transparent">
+                 {chatMessages.length === 0 ? (
+                   <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50">
+                     <Terminal className="w-12 h-12 text-neutral-600" />
+                     <p className="text-neutral-400 font-mono text-xs max-w-sm">
+                       El módulo lógico ha indexado el contenido y el resultado del análisis. <br/><br/>
+                       Puedes interrogar al sistema sobre detalles específicos, o solicitar transformaciones del material.
+                     </p>
+                   </div>
+                 ) : (
+                   chatMessages.map((msg, index) => (
+                     <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                       <div className={`max-w-[85%] rounded p-4 font-mono text-sm border shadow-sm break-words
+                         ${msg.role === 'user' 
+                           ? `bg-drcv-600 ${theme.border} text-neutral-200` 
+                           : `${theme.bg} border-transparent text-white bg-opacity-10 backdrop-blur-sm`}`}
+                        >
+                          <div className="flex items-center gap-2 mb-2 opacity-60">
+                             {msg.role === 'user' ? <Activity className="w-3 h-3" /> : <Terminal className="w-3 h-3" />}
+                             <span className="text-[10px] uppercase tracking-wider">{msg.role === 'user' ? 'GUEST_OPERATOR' : 'VAULT_AI'}</span>
+                          </div>
+                          <div className="whitespace-pre-wrap leading-relaxed">
+                            {msg.content}
+                          </div>
+                       </div>
+                     </div>
+                   ))
+                 )}
+                 {isChatLoading && (
+                   <div className="flex justify-start">
+                     <div className={`rounded p-4 font-mono text-sm border border-transparent text-white ${theme.bg} bg-opacity-10 w-32`}>
+                       <div className="flex space-x-2 items-center h-4">
+                         <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse [animation-delay:-0.3s]`}></div>
+                         <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse [animation-delay:-0.15s]`}></div>
+                         <div className={`w-2 h-2 ${theme.pulse} rounded-full animate-pulse`}></div>
+                       </div>
+                     </div>
+                   </div>
+                 )}
+                 <div ref={chatEndRef} />
+               </div>
+
+               {/* Input Area */}
+               <div className="p-4 bg-drcv-800 border-t border-drcv-500">
+                 <form onSubmit={handleChatSubmit} className="flex gap-2">
+                   <Input
+                     value={chatInput}
+                     onChange={(e) => setChatInput(e.target.value)}
+                     placeholder="Ingresa comando o consulta al sistema..."
+                     className={`flex-1 bg-black border-drcv-500 text-white placeholder-neutral-600 font-mono h-12 focus-visible:ring-1 focus-visible:${theme.ring} focus-visible:border-transparent transition-all`}
+                     disabled={isChatLoading}
+                   />
+                   <Button 
+                     type="submit" 
+                     disabled={isChatLoading || !chatInput.trim()}
+                     className={`h-12 px-6 ${theme.bg} text-white font-mono shadow-lg transition-transform active:scale-95`}
+                   >
+                     {isChatLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                   </Button>
+                 </form>
+               </div>
+             </CardContent>
           </Card>
         )}
       </div>
